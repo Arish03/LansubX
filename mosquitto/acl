@@ -1,0 +1,19 @@
+# Lansub X Access Control List (ACL)
+
+# Backend service has full read/write access to all lansubx topics
+user backend
+topic readwrite lansubx/#
+
+# Gateway user: can publish telemetry, status, command/ack; can read commands
+user gateway
+topic write lansubx/+/telemetry
+topic write lansubx/+/status
+topic write lansubx/+/command/ack
+topic read lansubx/+/command
+
+# Direct devices: username equals device_key (%u)
+# Can only write their own telemetry, status, and ack; can only read their own commands
+pattern write lansubx/%u/telemetry
+pattern write lansubx/%u/status
+pattern write lansubx/%u/command/ack
+pattern read lansubx/%u/command

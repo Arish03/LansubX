@@ -1,0 +1,72 @@
+# Lansub X Gateway Configuration (ADR-5)
+
+mqtt:
+  host: mosquitto
+  port: 1883
+  username: gateway
+  password: gateway_secure_pass_123
+
+gateways:
+  modbus:
+    enabled: true
+    host: simulator
+    port: 502
+    slave_id: 1
+    device_key: dev_modbus00001
+    poll_interval_seconds: 5
+    holding_registers:
+      - address: 0
+        metric: temperature
+        scale: 0.1
+      - address: 1
+        metric: pressure
+        scale: 0.01
+      - address: 2
+        metric: flow_rate
+        scale: 0.1
+      - address: 3
+        metric: motor_speed
+        scale: 1.0
+      - address: 4
+        metric: motor_current
+        scale: 0.01
+      - address: 5
+        metric: vibration
+        scale: 0.01
+      - address: 6
+        metric: power
+        scale: 0.1
+    coils:
+      - address: 0
+        metric: running
+      - address: 1
+        metric: fault
+
+  opcua:
+    enabled: true
+    endpoint_url: opc.tcp://simulator:4840
+    device_key: dev_opcua000001
+    poll_interval_seconds: 5
+    nodes:
+      - node_id: "ns=2;s=Temperature"
+        metric: temperature
+      - node_id: "ns=2;s=Pressure"
+        metric: pressure
+      - node_id: "ns=2;s=FlowRate"
+        metric: flow_rate
+      - node_id: "ns=2;s=MotorSpeed"
+        metric: motor_speed
+      - node_id: "ns=2;s=MotorCurrent"
+        metric: motor_current
+      - node_id: "ns=2;s=Vibration"
+        metric: vibration
+      - node_id: "ns=2;s=Running"
+        metric: running
+      - node_id: "ns=2;s=Fault"
+        metric: fault
+
+  lora:
+    enabled: true
+    chirpstack_uplink_topic: "application/+/device/+/event/up"
+    dev_eui_map:
+      "0011223344556677": dev_lora0000001
