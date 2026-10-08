@@ -29,11 +29,19 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     headers.set("Content-Type", "application/json");
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-    credentials: "include",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}${endpoint}`, {
+      ...options,
+      headers,
+      credentials: "include",
+    });
+  } catch (err: any) {
+    if (err?.name === "TypeError" || String(err).includes("Failed to fetch")) {
+      throw new Error(`Cannot connect to Backend API at ${API_URL}. Ensure the backend service is started.`);
+    }
+    throw err;
+  }
 
   if (!res.ok) {
     let errorDetail = "An unexpected error occurred";
