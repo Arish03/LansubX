@@ -7,9 +7,9 @@ RUN npm install
 
 COPY . ./
 
-EXPOSE 6000
+EXPOSE 6001
 
-ENV PORT 6000
+ENV PORT 6001
 ENV HOSTNAME "0.0.0.0"
 
 CMD ["npm", "run", "dev"]

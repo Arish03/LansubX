@@ -71,7 +71,7 @@
                                                   |
                                                   v
  +---------------------------------------------------------------+
- |                  Next.js Dashboard (Port 6000)                |
+ |                  Next.js Dashboard (Port 6001)                |
  |    - Live Streaming Charts          - Active Alarm Banners    |
  |    - Remote Command Dispatch        - Multi-Tenant Isolation |
  +---------------------------------------------------------------+
@@ -85,7 +85,7 @@ Lansub X uses a standardized, non-conflicting port mapping layout:
 
 | Layer | Port | Protocol | Service / Component | Visibility / Role |
 |---|---|---|---|---|
-| **User & Operator Interfaces** | **`6000`** | HTTP | **Web Browser Dashboard** (Next.js) | Public / Operator Browser |
+| **User & Operator Interfaces** | **`6001`** | HTTP | **Web Browser Dashboard** (Next.js) | Public / Operator Browser |
 | | **`6500`** | HTTP / WS | **REST API & WebSocket Live Stream** (FastAPI) | Public / Client REST & WS |
 | **Data Ingestion Bus** | **`1883`** | TCP | **Mosquitto MQTT Broker** (Plain) | Public / Factory Devices |
 | | **`8883`** | TCP (TLS) | **Mosquitto MQTT Broker** (Encrypted) | Optional MQTTS |
@@ -101,8 +101,8 @@ Lansub X uses a standardized, non-conflicting port mapping layout:
 When deploying Lansub X to an **Azure Virtual Machine**, configure your **Network Security Group (NSG) Inbound Security Rules** as follows:
 
 ### Summary: How Many Ports to Add in Azure NSG?
-- **Standard Cloud Deployment:** **4 Inbound Ports** (`22`, `6000`, `6500`, `1883`)
-- **With Encrypted MQTT (TLS):** **5 Inbound Ports** (`22`, `6000`, `6500`, `1883`, `8883`)
+- **Standard Cloud Deployment:** **4 Inbound Ports** (`22`, `6001`, `6500`, `1883`)
+- **With Encrypted MQTT (TLS):** **5 Inbound Ports** (`22`, `6001`, `6500`, `1883`, `8883`)
 - **With Field Gateway / Simulator Exposed to Factory Network:** **Up to 7 Inbound Ports** (`+ 502`, `+ 4840`)
 - **Strictly Prohibited on Public Internet:** `5441` (Postgres) and `6385` (Redis) must **NEVER** be opened to `0.0.0.0/0`.
 
@@ -111,7 +111,7 @@ When deploying Lansub X to an **Azure Virtual Machine**, configure your **Networ
 | Priority | Rule Name | Port / Range | Protocol | Source | Destination | Action | Purpose / Rationale |
 |:---:|---|---|:---:|---|---|:---:|---|
 | **100** | `Allow-SSH-Admin` | `22` | TCP | `My_IP_Address` *(or VPN)* | Any | **Allow** | VM terminal administration. Restrict to admin IP. |
-| **200** | `Allow-HTTP-Dashboard` | `6000` | TCP | `Internet` *(or Corporate IP)* | Any | **Allow** | Web browser access to Next.js operator dashboard. |
+| **200** | `Allow-HTTP-Dashboard` | `6001` | TCP | `Internet` *(or Corporate IP)* | Any | **Allow** | Web browser access to Next.js operator dashboard. |
 | **210** | `Allow-API-WebSocket` | `6500` | TCP | `Internet` *(or Corporate IP)* | Any | **Allow** | REST API endpoints (`/docs`, `/api`) & live WebSockets (`/ws`). |
 | **300** | `Allow-MQTT-Telemetry` | `1883` | TCP | `Internet` *(or Plant Gateway IP)* | Any | **Allow** | Device telemetry uplinks and remote command execution. |
 | **310** | `Allow-MQTTS-TLS` *(opt)* | `8883` | TCP | `Internet` *(or Plant Gateway IP)* | Any | **Allow** | Encrypted TLS telemetry if SSL certificate is mounted. |
@@ -120,7 +120,7 @@ When deploying Lansub X to an **Azure Virtual Machine**, configure your **Networ
 | **900** | `Deny-Postgres-Direct` | `5441` | TCP | Any | Any | **Deny** | Keep database closed to the internet. Docker bridges internally. |
 | **910** | `Deny-Redis-Direct` | `6385` | TCP | Any | Any | **Deny** | Keep Redis message bus closed to the internet. |
 
-> 🔒 **Security Best Practice:** In production, route ports `6000` and `6500` through an Azure Application Gateway or NGINX reverse proxy with TLS certificates on standard ports `80` / `443`.
+> 🔒 **Security Best Practice:** In production, route ports `6001` and `6500` through an Azure Application Gateway or NGINX reverse proxy with TLS certificates on standard ports `80` / `443`.
 
 ---
 
@@ -157,7 +157,7 @@ docker compose exec backend python -m app.seed
 docker compose exec backend python -m unittest backend/tests/test_acceptance_rc.py
 
 # 5. Access the applications
-# Web Dashboard:  http://localhost:6000
+# Web Dashboard:  http://localhost:6001
 # OpenAPI Docs:    http://localhost:6500/docs
 # API Health:      http://localhost:6500/health
 ```
@@ -274,7 +274,7 @@ uvicorn app.main:app --reload --port 6500
 cd frontend
 npm install
 npm run dev
-# Running on http://localhost:6000
+# Running on http://localhost:6001
 ```
 
 ---
@@ -339,8 +339,8 @@ LansubX/
 │   └── tests/                  # Unit and integration test suites
 │
 ├── frontend/                   # Next.js 14 Web Dashboard
-│   ├── Dockerfile              # Exposes 6000
-│   ├── package.json            # Scripts: dev -p 6000, start -p 6000
+│   ├── Dockerfile              # Exposes 6001
+│   ├── package.json            # Scripts: dev -p 6001, start -p 6001
 │   ├── next.config.js          # Reverse proxy rewrites to backend:6500
 │   └── src/
 │       ├── app/                # App router (login, dashboard, devices, rules, settings)
