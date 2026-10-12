@@ -89,7 +89,7 @@ services:
     container_name: lansubx-frontend-prod
     restart: always
     ports:
-      - "6000:6000"
+      - "${FRONTEND_PORT:-6001}:6001"
     environment:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:6500}
       NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:6500}
