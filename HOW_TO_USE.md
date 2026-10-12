@@ -56,9 +56,9 @@ docker compose exec backend python -m app.seed
 ```
 
 ### Accessing Platform Endpoints:
-- **Web UI:** [http://localhost:3000](http://localhost:3000)
-- **FastAPI OpenAPI Swagger:** [http://localhost:8000/docs](http://localhost:8000/docs)
-- **API Health Check:** [http://localhost:8000/health](http://localhost:8000/health)
+- **Web UI:** [http://localhost:6000](http://localhost:6000)
+- **FastAPI OpenAPI Swagger:** [http://localhost:6500/docs](http://localhost:6500/docs)
+- **API Health Check:** [http://localhost:6500/health](http://localhost:6500/health)
 - **MQTT Broker:** `localhost:1883`
 
 ---
@@ -81,7 +81,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 alembic upgrade head
 python -m app.seed
-uvicorn app.main:app --reload --port 8000
+uvicorn app.main:app --reload --port 6500
 
 # Frontend (Terminal 2)
 cd frontend
@@ -93,11 +93,20 @@ npm run dev
 
 ## 4. First-Time Walkthrough (The First 15 Minutes)
 
-### Step 1: Create Your Admin Account
-1. Open [http://localhost:3000/login](http://localhost:3000/login) in your browser.
-2. Click **"Need an account? Register"**.
-3. Register your email and password (e.g. `admin@lansubx.io` / `Password123!`).
-4. **Automatic Admin Assignment:** The very first registered user in the database is automatically granted the `admin` role. Subsequent registrations are assigned the `operator` role.
+### Default Platform Credentials (Pre-Seeded)
+When starting Lansub X, the database seed (`python -m app.seed`) automatically provisions default administrative credentials:
+
+| Role | Default Email | Default Password | Permissions |
+|---|---|---|---|
+| **Superadmin** | `superadmin@lansubx.io` | `SuperAdmin123!` | Full unrestricted access, role promotion, system oversight |
+| **Admin** | `admin@lansubx.io` | `AdminPassword123!` | Device onboarding, gateway configuration, rules & alarm management |
+
+You can immediately log in at [http://localhost:6000/login](http://localhost:6000/login) using either default account.
+
+### Step 1: Create a Custom Admin or Operator Account
+1. Open [http://localhost:6000/login](http://localhost:6000/login) in your browser.
+2. If starting with an unseeded database, the first registered user is automatically assigned the `superadmin` role.
+3. Once administrative accounts exist, public registration is locked for security. New users (operators, engineers) can be provisioned through the Users API or with an active administrative token.
 
 ---
 
@@ -118,7 +127,7 @@ docker compose exec backend python -m app.seed
 ---
 
 ### Step 3: Provision a New Device
-1. Navigate to **Devices** ([http://localhost:3000/devices](http://localhost:3000/devices)).
+1. Navigate to **Devices** ([http://localhost:6000/devices](http://localhost:6000/devices)).
 2. Click **"Add Device"**.
 3. Select a template (e.g. `ESP32 Sensor Node`).
 4. Enter a name (e.g. `Furnace Monitor 1`) and a unique key (or leave blank to auto-generate, e.g. `dev_esp32_01`).
@@ -174,7 +183,7 @@ docker compose exec mosquitto mosquitto_pub \
 ---
 
 ### Step 6: Configure Alarm Rules
-1. Navigate to **Alarm Rules** ([http://localhost:3000/rules](http://localhost:3000/rules)).
+1. Navigate to **Alarm Rules** ([http://localhost:6000/rules](http://localhost:6000/rules)).
 2. Click **"New Rule"**.
 3. Choose your device, enter a rule name (e.g. `High Furnace Temp`).
 4. Select metric: `temperature`, condition: `>`, threshold: `80.0`.
@@ -187,7 +196,7 @@ docker compose exec mosquitto mosquitto_pub \
 ---
 
 ### Step 7: Monitor via Web Dashboard
-1. Open the **Dashboard** ([http://localhost:3000/dashboard](http://localhost:3000/dashboard)):
+1. Open the **Dashboard** ([http://localhost:6000/dashboard](http://localhost:6000/dashboard)):
    - **Total Devices & Online Status**: Dynamically calculated based on last telemetry/status timestamps.
    - **Active Alarms Counter**: Color-coded by warning and critical levels.
    - **Commands Dispatched**: Status breakdown (pending, delivered, acknowledged, failed).
@@ -325,7 +334,7 @@ python scripts/acceptance_test.py
 
 ### Q: Live charts are not updating in the browser
 - Check that Redis is running (`docker compose ps redis`).
-- Verify that your browser can reach the WebSocket endpoint at `ws://localhost:8000/ws?token=<JWT_TOKEN>`.
+- Verify that your browser can reach the WebSocket endpoint at `ws://localhost:6500/ws?token=<JWT_TOKEN>`.
 - In the browser dev tools console, verify that no authentication errors are logged.
 
 ### Q: How do I reset the database to a clean state?

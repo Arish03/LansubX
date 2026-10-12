@@ -21,6 +21,7 @@ router = APIRouter(prefix="/auth", tags=["Authentication"])
 class UserRegisterRequest(BaseModel):
     email: EmailStr
     password: str
+    role: Optional[UserRole] = None
 
 
 class UserLoginRequest(BaseModel):
@@ -58,12 +59,13 @@ async def register(
 
     # Determine assigned role
     if total_users == 0:
-        # First registered user becomes Admin (FR-A1)
-        assigned_role = UserRole.ADMIN
+        # First registered user becomes Superadmin (or Admin)
+        assigned_role = payload.role or UserRole.SUPERADMIN
     else:
-        # If users exist, registration requires an active Admin session
+        # If users exist, registration requires an active Admin or Superadmin session
         auth_header = request.headers.get("Authorization")
         admin_authenticated = False
+        admin_user = None
         if auth_header and auth_header.startswith("Bearer "):
             token = auth_header[7:]
             token_payload = decode_access_token(token)
@@ -71,7 +73,7 @@ async def register(
                 admin_user_id = int(token_payload["sub"])
                 admin_res = await db.execute(select(User).where(User.id == admin_user_id))
                 admin_user = admin_res.scalar_one_or_none()
-                if admin_user and admin_user.role == UserRole.ADMIN:
+                if admin_user and (admin_user.role in (UserRole.ADMIN, UserRole.SUPERADMIN)):
                     admin_authenticated = True
 
         if not admin_authenticated:
@@ -79,7 +81,15 @@ async def register(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Public registration is closed. Please ask an administrator to create your account.",
             )
-        assigned_role = UserRole.VIEWER
+
+        # Enforce role assignment hierarchy
+        requested_role = payload.role or UserRole.VIEWER
+        if requested_role == UserRole.SUPERADMIN and admin_user.role != UserRole.SUPERADMIN:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Only a Superadmin can provision another Superadmin account.",
+            )
+        assigned_role = requested_role
 
     # Check if email is already taken
     existing_user_res = await db.execute(select(User).where(User.email == payload.email))

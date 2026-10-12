@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { getAuthToken } from "./api";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8000";
+const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:6500";
 
 export interface LiveMessage {
   type: "telemetry" | "alarm" | "device_status" | "command_result" | "system";

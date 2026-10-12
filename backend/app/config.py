@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     MQTT_GATEWAY_PASSWORD: str = "gateway_secure_pass_123"
 
     # CORS
-    CORS_ORIGINS: str = "http://localhost:3000,http://127.0.0.1:3000"
+    CORS_ORIGINS: str = "http://localhost:6000,http://127.0.0.1:6000"
 
     @property
     def cors_origins_list(self) -> List[str]:

@@ -133,12 +133,12 @@ export default function SettingsPage() {
         </p>
 
         <a
-          href="http://localhost:8000/docs"
+          href="http://localhost:6500/docs"
           target="_blank"
           rel="noreferrer"
           className="inline-flex items-center space-x-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-sky-400 text-xs font-mono rounded-lg border border-slate-700 transition-colors"
         >
-          <span>OpenAPI Swagger UI (http://localhost:8000/docs)</span>
+          <span>OpenAPI Swagger UI (http://localhost:6500/docs)</span>
           <ExternalLink className="h-3.5 w-3.5" />
         </a>
       </div>

@@ -119,10 +119,11 @@ async def get_current_user(
 
 def require_role(allowed_roles: List[UserRole]):
     async def role_checker(current_user: User = Depends(get_current_user)) -> User:
-        if current_user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Operation not permitted. Requires role in {[r.value for r in allowed_roles]}",
-            )
-        return current_user
+        # Superadmin inherently possesses all administrative permissions
+        if current_user.role == UserRole.SUPERADMIN or current_user.role in allowed_roles:
+            return current_user
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=f"Operation not permitted. Requires role in {[r.value for r in allowed_roles]}",
+        )
     return role_checker

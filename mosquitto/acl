@@ -1,15 +1,17 @@
 # Lansub X Access Control List (ACL)
 
-# Backend service has full read/write access to all lansubx topics
+# Backend service has full read/write access to all lansubx topics and LoRa ChirpStack uplinks
 user backend
 topic readwrite lansubx/#
+topic readwrite application/#
 
-# Gateway user: can publish telemetry, status, command/ack; can read commands
+# Gateway user: can publish telemetry, status, command/ack; can read commands; can bridge ChirpStack uplinks
 user gateway
 topic write lansubx/+/telemetry
 topic write lansubx/+/status
 topic write lansubx/+/command/ack
 topic read lansubx/+/command
+topic readwrite application/#
 
 # Direct devices: username equals device_key (%u)
 # Can only write their own telemetry, status, and ack; can only read their own commands

@@ -7,7 +7,7 @@ import { api, setAuthToken, clearAuthToken, getAuthToken } from "./api";
 export interface User {
   id: number;
   email: string;
-  role: "admin" | "engineer" | "operator" | "viewer";
+  role: "superadmin" | "admin" | "engineer" | "operator" | "viewer";
   is_active: boolean;
   created_at: string;
 }
