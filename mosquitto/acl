@@ -4,6 +4,7 @@
 user backend
 topic readwrite lansubx/#
 topic readwrite application/#
+topic read $SYS/#
 
 # Gateway user: can publish telemetry, status, command/ack; can read commands; can bridge ChirpStack uplinks
 user gateway
