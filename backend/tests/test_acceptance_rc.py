@@ -205,23 +205,23 @@ class TestResiliencyAndBackoff(unittest.TestCase):
 
 
 class TestProductionComposeReadiness(unittest.TestCase):
-    """Verifies docker-compose.prod.yml security and hardening integrity."""
+    """Verifies docker-compose.yml security and hardening integrity."""
 
     def test_prod_compose_configuration(self):
-        compose_path = os.path.join(WORKSPACE_DIR, "docker-compose.prod.yml")
+        compose_path = os.path.join(WORKSPACE_DIR, "docker-compose.yml")
         self.assertTrue(os.path.exists(compose_path))
 
         with open(compose_path, "r", encoding="utf-8") as f:
             content = f.read()
 
-        # Database and Redis must NOT expose raw ports to host in production
+        # Database and Redis must NOT expose raw unremapped default ports to host (5432:5432 or 6379:6379)
         self.assertNotIn('"5432:5432"', content)
         self.assertNotIn('"6379:6379"', content)
 
         # Volumes must exist for persistence
-        self.assertIn("postgres_prod_data:", content)
-        self.assertIn("mosquitto_prod_data:", content)
-        self.assertIn("redis_prod_data:", content)
+        self.assertIn("postgres_data:", content)
+        self.assertIn("mosquitto_data:", content)
+        self.assertIn("redis_data:", content)
 
         # Health checks must be defined
         self.assertIn("healthcheck:", content)

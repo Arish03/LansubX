@@ -154,7 +154,7 @@ docker compose up -d --build
 docker compose exec backend python -m app.seed
 
 # 4. Run automated acceptance verification
-docker compose exec backend python -m unittest backend/tests/test_acceptance_rc.py
+docker compose exec backend python -m unittest tests/test_acceptance_rc.py
 
 # 5. Access the applications
 # Web Dashboard:  http://localhost:6001
@@ -281,10 +281,10 @@ npm run dev
 
 ## 10. Production Deployment & Hardening
 
-For production environments, use `docker-compose.prod.yml`:
+Lansub X uses a single unified `docker-compose.yml` for both development and production:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+docker compose up -d --build
 ```
 
 ### Hardening Features
@@ -318,8 +318,7 @@ python scripts/acceptance_test.py
 ```
 LansubX/
 ├── .env.example                # Sample environment configuration
-├── docker-compose.yml          # Local development compose (all ports mapped)
-├── docker-compose.prod.yml     # Production hardened compose (internal DBs)
+├── docker-compose.yml          # Unified all-in-one compose stack
 ├── README.md                   # Project overview & deployment guide
 ├── HOW_TO_USE.md               # 15-minute step-by-step operator walkthrough
 ├── PRD.md                      # Product Requirements Document
