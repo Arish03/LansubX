@@ -1,70 +1,101 @@
-# Lansub X Gateway Configuration (ADR-5)
+# Lansub X Industrial Protocol Gateway Configuration (ADR-5, Milestone 5)
+# Translates Modbus TCP registers, OPC UA nodes, and LoRaWAN ChirpStack uplinks to MQTT.
 
 mqtt:
   host: mosquitto
   port: 1883
   username: gateway
   password: gateway_secure_pass_123
+  client_id: lansubx_industrial_gateway
 
 gateways:
+  # =====================================================================
+  # 1. Modbus TCP Gateway (M5.1, FR-G1)
+  # Reads holding registers, input registers, and coils.
+  # Handles remote commands (write coil, write register) and reports status.
+  # =====================================================================
   modbus:
     enabled: true
+    # Single device shortcut or 'devices' list:
     host: simulator
     port: 502
     slave_id: 1
     device_key: dev_modbus00001
-    poll_interval_seconds: 5
+    poll_interval_seconds: 5.0
     holding_registers:
       - address: 0
         metric: temperature
         scale: 0.1
+        unit: "°C"
       - address: 1
         metric: pressure
         scale: 0.01
+        unit: "bar"
       - address: 2
         metric: flow_rate
         scale: 0.1
+        unit: "L/min"
       - address: 3
         metric: motor_speed
         scale: 1.0
+        unit: "RPM"
       - address: 4
         metric: motor_current
         scale: 0.01
+        unit: "A"
       - address: 5
         metric: vibration
         scale: 0.01
+        unit: "mm/s"
       - address: 6
         metric: power
         scale: 0.1
+        unit: "kW"
     coils:
       - address: 0
         metric: running
       - address: 1
         metric: fault
 
+  # =====================================================================
+  # 2. OPC UA Gateway (M5.2, FR-G2)
+  # Reads configured Node IDs by polling and forwards to MQTT.
+  # Handles remote commands (write variable) and reports status.
+  # =====================================================================
   opcua:
     enabled: true
     endpoint_url: opc.tcp://simulator:4840
     device_key: dev_opcua000001
-    poll_interval_seconds: 5
+    poll_interval_seconds: 5.0
     nodes:
       - node_id: "ns=2;s=Temperature"
         metric: temperature
+        unit: "°C"
       - node_id: "ns=2;s=Pressure"
         metric: pressure
+        unit: "bar"
       - node_id: "ns=2;s=FlowRate"
         metric: flow_rate
+        unit: "L/min"
       - node_id: "ns=2;s=MotorSpeed"
         metric: motor_speed
+        unit: "RPM"
       - node_id: "ns=2;s=MotorCurrent"
         metric: motor_current
+        unit: "A"
       - node_id: "ns=2;s=Vibration"
         metric: vibration
+        unit: "mm/s"
       - node_id: "ns=2;s=Running"
         metric: running
       - node_id: "ns=2;s=Fault"
         metric: fault
 
+  # =====================================================================
+  # 3. LoRaWAN ChirpStack Bridge (M5.3, FR-G3)
+  # Subscribes to ChirpStack MQTT uplinks, extracts decoded telemetry,
+  # maps devEui to LansubX device_key, and enriches with RSSI / SNR.
+  # =====================================================================
   lora:
     enabled: true
     chirpstack_uplink_topic: "application/+/device/+/event/up"

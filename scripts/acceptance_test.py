@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 """
-Lansub X: End-to-End Acceptance Test Suite (Milestone 6)
-Verifies core acceptance criteria defined in MVP.md and PRD.md:
+Lansub X: End-to-End Acceptance Test Suite (Milestone 6 Release Candidate)
+Verifies core acceptance criteria defined in MVP.md, PRD.md, and ARCHITECTURE.md:
 1. Health & DB readiness
 2. Auth & Admin assignment (FR-A1)
-3. Tenant isolation & owner scoping (FR-D7, FR-L2)
-4. Device creation & secret provisioning (FR-D2, FR-D3)
-5. MQTT Telemetry ingestion to DB (FR-I1, FR-T1)
-6. Alarm engine trigger & auto-resolve (FR-R1, FR-R4)
-7. Remote command dispatch & ack tracking (FR-C1, FR-C3)
+3. Registration guard (FR-A1)
+4. Device creation & one-time secret provisioning (FR-D2, FR-D3)
+5. Zero Cross-Tenant Data Leaks & Strict Owner Scoping (FR-D7, FR-L2)
+6. MQTT Telemetry ingestion to PostgreSQL <1s (NFR-1, FR-I1)
+7. Telemetry History & Metrics Querying (FR-T1, FR-T2, FR-T3)
+8. Device Online / Offline Status Lifecycle & LWT (FR-D5, FR-D6)
+9. Alarm engine trigger & auto-resolution (FR-R1, FR-R4)
+10. Remote command dispatch & round-trip ACK tracking (FR-C1, FR-C3)
+11. Industrial Gateway Management & Isolation (FR-G5, FR-G6)
 
 Built using Python standard library (urllib) for universal execution
 without requiring external pip dependencies on host environments.
@@ -24,7 +28,7 @@ import time
 import urllib.request
 import urllib.error
 
-API_BASE = os.getenv("API_BASE", "http://localhost:8000")
+API_BASE = os.getenv("API_BASE", "http://localhost:6500")
 MQTT_HOST = os.getenv("MQTT_BROKER_HOST", "localhost")
 MQTT_PORT = int(os.getenv("MQTT_BROKER_PORT", 1883))
 MQTT_USER = os.getenv("MQTT_BACKEND_USERNAME", "backend")
@@ -76,6 +80,12 @@ class RestClient:
     def post(self, path: str, json_data=None, headers=None):
         return self.request("POST", path, json_data=json_data, headers=headers)
 
+    def put(self, path: str, json_data=None, headers=None):
+        return self.request("PUT", path, json_data=json_data, headers=headers)
+
+    def delete(self, path: str, headers=None):
+        return self.request("DELETE", path, headers=headers)
+
 
 def get_aiomqtt_module():
     try:
@@ -93,17 +103,20 @@ async def publish_mqtt_message(topic: str, payload_dict: dict):
     payload_str = json.dumps(payload_dict)
 
     if aiomqtt_mod is not None:
-        async with aiomqtt_mod.Client(
-            hostname=MQTT_HOST,
-            port=MQTT_PORT,
-            username=MQTT_USER,
-            password=MQTT_PASS,
-            identifier=f"acceptance_pub_{int(time.time() * 1000) % 100000}",
-        ) as client:
-            await client.publish(topic, payload_str, qos=0)
-            return True
+        try:
+            async with aiomqtt_mod.Client(
+                hostname=MQTT_HOST,
+                port=MQTT_PORT,
+                username=MQTT_USER,
+                password=MQTT_PASS,
+                identifier=f"acceptance_pub_{int(time.time() * 1000) % 100000}",
+            ) as client:
+                await client.publish(topic, payload_str, qos=0)
+                return True
+        except Exception:
+            pass
 
-    # Fallback: invoke mosquitto_pub via docker or system
+    # Fallback 1: invoke mosquitto_pub via docker compose
     try:
         cmd = [
             "docker", "compose", "exec", "-T", "mosquitto",
@@ -120,6 +133,7 @@ async def publish_mqtt_message(topic: str, payload_dict: dict):
     except Exception:
         pass
 
+    # Fallback 2: local mosquitto_pub CLI
     try:
         cmd_local = [
             "mosquitto_pub",
@@ -155,7 +169,8 @@ class AcceptanceRunner:
 
     async def run_all(self):
         print("\n=======================================================")
-        print("  LANSUB X: END-TO-END SYSTEM ACCEPTANCE TEST SUITE")
+        print("  LANSUB X: END-TO-END ACCEPTANCE VERIFICATION SUITE")
+        print("  Milestone 6 Release Candidate Hardening Verification")
         print("=======================================================\n")
 
         await self.test_health_check()
@@ -164,8 +179,11 @@ class AcceptanceRunner:
         await self.test_device_creation()
         await self.test_multi_tenant_isolation()
         await self.test_telemetry_ingestion()
+        await self.test_telemetry_metrics_and_history()
+        await self.test_device_status_and_lwt()
         await self.test_alarm_lifecycle()
         await self.test_command_dispatch_and_ack()
+        await self.test_gateway_management_and_isolation()
 
         print("\n-------------------------------------------------------")
         print(f"Summary: {self.passed_tests} PASSED, {self.failed_tests} FAILED")
@@ -184,14 +202,19 @@ class AcceptanceRunner:
         if code == 200 and isinstance(data, dict):
             self.admin_token = data.get("access_token")
             role = data.get("user", {}).get("role")
-            self.record_result("2. First Registered User Becomes Admin (FR-A1)", role == "admin", f"role={role}")
+            self.record_result("2. First Registered User Becomes Admin/Superadmin (FR-A1)", role in ("admin", "superadmin"), f"role={role}")
         else:
-            # Login if user already exists
-            code_log, data_log = self.http.post("/auth/login", {"email": email, "password": password})
+            # Login with default seeded admin or superadmin if already initialized
+            code_log, data_log = self.http.post("/auth/login", {"email": "admin@lansubx.io", "password": "AdminPassword123!"})
+            if code_log != 200:
+                code_log, data_log = self.http.post("/auth/login", {"email": "superadmin@lansubx.io", "password": "SuperAdmin123!"})
+            if code_log != 200:
+                code_log, data_log = self.http.post("/auth/login", {"email": email, "password": password})
+
             ok = code_log == 200 and isinstance(data_log, dict)
             if ok:
                 self.admin_token = data_log.get("access_token")
-            self.record_result("2. Admin Authentication", ok, f"status={code_log}")
+            self.record_result("2. Admin/Superadmin Authentication", ok, f"status={code_log}")
 
     async def test_registration_guard(self):
         # Subsequent registration without active admin token must be rejected with 403 Forbidden
@@ -231,13 +254,22 @@ class AcceptanceRunner:
             self.record_result("5. Zero Cross-Tenant Data Leaks", False, "Could not register User B")
             return
 
-        token_b = reg_b.get("access_token")
-        headers_b = {"Authorization": f"Bearer {token_b}"}
+        self.user_b_token = reg_b.get("access_token")
+        headers_b = {"Authorization": f"Bearer {self.user_b_token}"}
 
-        # User B attempts to access User A's device
-        code_dev, _ = self.http.get(f"/devices/{self.test_device['id']}", headers=headers_b)
-        is_isolated = code_dev == 404
-        self.record_result("5. Zero Cross-Tenant Data Leaks (FR-D7, FR-L2)", is_isolated, f"User B access code={code_dev}")
+        dev_id = self.test_device["id"]
+
+        # 1. User B attempts to read User A's device
+        code_dev, _ = self.http.get(f"/devices/{dev_id}", headers=headers_b)
+        # 2. User B attempts to read User A's telemetry latest
+        code_tel_latest, _ = self.http.get(f"/devices/{dev_id}/telemetry/latest", headers=headers_b)
+        # 3. User B attempts to read User A's commands
+        code_cmd_get, _ = self.http.get(f"/devices/{dev_id}/commands", headers=headers_b)
+        # 4. User B attempts to send command to User A's device
+        code_cmd_post, _ = self.http.post(f"/devices/{dev_id}/commands", {"action": "reboot"}, headers=headers_b)
+
+        is_isolated = (code_dev == 404 and code_tel_latest == 404 and code_cmd_get == 404 and code_cmd_post == 404)
+        self.record_result("5. Zero Cross-Tenant Data Leaks (FR-D7, FR-L2)", is_isolated, f"dev={code_dev}, tel={code_tel_latest}, cmd={code_cmd_post}")
 
     async def test_telemetry_ingestion(self):
         if not self.test_device:
@@ -248,14 +280,13 @@ class AcceptanceRunner:
 
         test_val = 74.2
         topic = f"lansubx/{device_key}/telemetry"
-        payload = {"values": {"temperature": test_val}}
+        payload = {"values": {"temperature": test_val, "pressure": 101.3}}
 
         pub_ok = await publish_mqtt_message(topic, payload)
         if not pub_ok:
             self.record_result("6. MQTT Telemetry Ingestion", False, "Could not publish to MQTT broker")
             return
 
-        # Give ingestion pipeline a short moment to write to DB
         await asyncio.sleep(0.8)
 
         headers = {"Authorization": f"Bearer {self.admin_token}"}
@@ -267,9 +298,52 @@ class AcceptanceRunner:
         else:
             self.record_result("6. MQTT Telemetry Ingestion", False, f"status={code}")
 
+    async def test_telemetry_metrics_and_history(self):
+        if not self.test_device:
+            self.record_result("7. Telemetry Metrics & History Querying", False, "No test device")
+            return
+        device_id = self.test_device["id"]
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+
+        # 1. Query recorded metric names
+        code_m, metrics = self.http.get(f"/devices/{device_id}/metrics", headers=headers)
+        has_metrics = code_m == 200 and isinstance(metrics, list) and "temperature" in metrics
+
+        # 2. Query historical telemetry time series
+        code_h, history = self.http.get(f"/devices/{device_id}/telemetry?metric=temperature&limit=10", headers=headers)
+        has_history = code_h == 200 and isinstance(history, list) and len(history) > 0
+
+        ok = has_metrics and has_history
+        self.record_result("7. Telemetry History & Metrics API (FR-T1, FR-T2, FR-T3)", ok, f"metrics={metrics}, count={len(history) if isinstance(history, list) else 0}")
+
+    async def test_device_status_and_lwt(self):
+        if not self.test_device:
+            self.record_result("8. Device Online/Offline Lifecycle & LWT", False, "No test device")
+            return
+        device_key = self.test_device["device_key"]
+        device_id = self.test_device["id"]
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+
+        # 1. Publish status offline (simulating Last Will and Testament)
+        await publish_mqtt_message(f"lansubx/{device_key}/status", {"online": False, "source": "lwt_test"})
+        await asyncio.sleep(0.6)
+
+        code1, dev1 = self.http.get(f"/devices/{device_id}", headers=headers)
+        is_offline = code1 == 200 and dev1.get("is_online") is False
+
+        # 2. Publish status online
+        await publish_mqtt_message(f"lansubx/{device_key}/status", {"online": True, "source": "connect_test"})
+        await asyncio.sleep(0.6)
+
+        code2, dev2 = self.http.get(f"/devices/{device_id}", headers=headers)
+        is_online = code2 == 200 and dev2.get("is_online") is True
+
+        ok = is_offline and is_online
+        self.record_result("8. Device Online/Offline Lifecycle & LWT (FR-D5, FR-D6)", ok, f"offline={is_offline}, online={is_online}")
+
     async def test_alarm_lifecycle(self):
         if not self.test_device:
-            self.record_result("7. Alarm Engine Lifecycle", False, "No test device")
+            self.record_result("9. Alarm Engine Lifecycle", False, "No test device")
             return
         device_id = self.test_device["id"]
         device_key = self.test_device["device_key"]
@@ -289,29 +363,29 @@ class AcceptanceRunner:
             headers=headers,
         )
         if code_rule != 201:
-            self.record_result("7. Alarm Engine Lifecycle", False, f"Could not create rule: code={code_rule}")
+            self.record_result("9. Alarm Engine Lifecycle", False, f"Could not create rule: code={code_rule}")
             return
 
         # 2. Trigger violation (92.5 > 80.0)
         await publish_mqtt_message(f"lansubx/{device_key}/telemetry", {"values": {"temperature": 92.5}})
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.6)
 
         _, active_alarms = self.http.get(f"/alarms?device_id={device_id}&state=active", headers=headers)
         opened = isinstance(active_alarms, list) and len(active_alarms) > 0
 
         # 3. Auto-resolve (70.0 <= 80.0)
         await publish_mqtt_message(f"lansubx/{device_key}/telemetry", {"values": {"temperature": 70.0}})
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.6)
 
         _, resolved_alarms = self.http.get(f"/alarms?device_id={device_id}&state=resolved", headers=headers)
         resolved = isinstance(resolved_alarms, list) and len(resolved_alarms) > 0
 
         ok = opened and resolved
-        self.record_result("7. Alarm Trigger & Auto-Resolution (FR-R2, FR-R4)", ok, f"opened={opened}, resolved={resolved}")
+        self.record_result("9. Alarm Trigger & Auto-Resolution (FR-R2, FR-R4)", ok, f"opened={opened}, resolved={resolved}")
 
     async def test_command_dispatch_and_ack(self):
         if not self.test_device:
-            self.record_result("8. Machine Remote Command", False, "No test device")
+            self.record_result("10. Machine Remote Command", False, "No test device")
             return
         device_id = self.test_device["id"]
         device_key = self.test_device["device_key"]
@@ -324,7 +398,7 @@ class AcceptanceRunner:
             headers=headers,
         )
         if code_cmd != 201 or not isinstance(cmd, dict):
-            self.record_result("8. Machine Remote Command", False, f"status={code_cmd}")
+            self.record_result("10. Machine Remote Command", False, f"status={code_cmd}")
             return
 
         cmd_id = cmd.get("id")
@@ -335,7 +409,7 @@ class AcceptanceRunner:
             f"lansubx/{device_key}/command/ack",
             {"id": cmd_id, "ok": True, "message": "Fan set to 1800 RPM"},
         )
-        await asyncio.sleep(0.5)
+        await asyncio.sleep(0.6)
 
         # 3. Check updated status
         _, cmd_list = self.http.get(f"/devices/{device_id}/commands", headers=headers)
@@ -343,7 +417,34 @@ class AcceptanceRunner:
         is_acked = target and target.get("status") == "acked"
 
         ok = initial_ok and is_acked
-        self.record_result("8. Command Dispatch & Round-Trip Acked (FR-C1, FR-C3)", ok, f"status={target.get('status') if target else 'unknown'}")
+        self.record_result("10. Command Dispatch & Round-Trip Acked (FR-C1, FR-C3)", ok, f"status={target.get('status') if target else 'unknown'}")
+
+    async def test_gateway_management_and_isolation(self):
+        if not self.admin_token or not self.user_b_token:
+            self.record_result("11. Gateway Management & Scoping", False, "Missing tokens")
+            return
+        headers_admin = {"Authorization": f"Bearer {self.admin_token}"}
+        headers_b = {"Authorization": f"Bearer {self.user_b_token}"}
+
+        # 1. Create Gateway by Admin
+        code_gw, gw = self.http.post(
+            "/gateways",
+            {
+                "name": "Acceptance Modbus Gateway",
+                "type": "modbus",
+                "config": {"host": "192.168.1.100", "port": 502},
+            },
+            headers=headers_admin,
+        )
+        created = code_gw == 201 and isinstance(gw, dict)
+        gw_id = gw.get("id") if created else 0
+
+        # 2. User B cannot see Admin's gateway
+        code_b_gw, b_gws = self.http.get("/gateways", headers=headers_b)
+        user_b_isolated = code_b_gw == 200 and isinstance(b_gws, list) and not any(g["id"] == gw_id for g in b_gws)
+
+        ok = created and user_b_isolated
+        self.record_result("11. Gateway Management & Strict Tenant Scoping (FR-G5, FR-G6)", ok, f"gw_id={gw_id}, b_count={len(b_gws) if isinstance(b_gws, list) else 0}")
 
 
 if __name__ == "__main__":

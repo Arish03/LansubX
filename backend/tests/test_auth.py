@@ -29,6 +29,12 @@ def test_jwt_token_creation_and_decoding():
     assert decoded["role"] == "admin"
     assert "exp" in decoded
 
+    # Superadmin role test
+    payload_sa = {"sub": "1", "role": UserRole.SUPERADMIN.value}
+    token_sa = create_access_token(payload_sa)
+    decoded_sa = decode_access_token(token_sa)
+    assert decoded_sa["role"] == "superadmin"
+
 
 def test_device_key_format():
     key = generate_device_key()

@@ -138,41 +138,41 @@ lansubx/
 
 ### Milestone 1: Secured Broker, Database & Authentication (M1)
 **Goal:** Deliver foundation infrastructure, database schemas, secure MQTT broker configuration, and user authentication with role-based access control.
-- [ ] **M1.1 Docker Compose & Environment Setup:**
+- [x] **M1.1 Docker Compose & Environment Setup:**
   - Create `.env.example` and `.env` with secure default tokens and port definitions.
   - Configure `docker-compose.yml` for PostgreSQL 16, Redis 7, Mosquitto 2, and FastAPI backend.
-- [ ] **M1.2 Mosquitto Broker Security & ACL Configuration:**
+- [x] **M1.2 Mosquitto Broker Security & ACL Configuration:**
   - Create `mosquitto/mosquitto.conf` enforcing `allow_anonymous false`, persistent storage, and ACL logging.
   - Generate initial `mosquitto/passwd` with credentials for `backend` and `gateway`.
   - Configure `mosquitto/acl` enforcing topics for `backend` (`lansubx/#`), `gateway`, and device patterns (`%u`).
   - Create `scripts/add_mqtt_user.sh` to provision credentials securely.
-- [ ] **M1.3 Database Architecture & Models:**
+- [x] **M1.3 Database Architecture & Models:**
   - Initialize SQLAlchemy async engine, declarative Base, and async session generator.
   - Implement models: `User`, `Gateway`, `Device`, `DeviceTemplate`, `Telemetry`, `AlarmRule`, `Alarm`, `Command`.
   - Configure Alembic migrations for versioned schema tracking.
-- [ ] **M1.4 Security & Authentication API:**
+- [x] **M1.4 Security & Authentication API:**
   - Implement password hashing (bcrypt) and JWT encode/decode routines.
   - Implement `POST /auth/register` (first user becomes Admin, subsequent registrations restricted or admin-only).
   - Implement `POST /auth/login` returning JWT bearer token.
   - Implement `GET /auth/me` and role-checking dependencies (`require_role("admin")`, etc.).
   - Implement user management endpoints: `GET /users`, `PUT /users/{id}`.
-- [ ] **M1.5 Seed Data:**
+- [x] **M1.5 Seed Data:**
   - Implement `backend/app/seed.py` to populate initial device templates for all 6 device kinds (Modbus, OPC UA, LoRa, ESP32, Sensor Controller, PLC).
 
 ### Milestone 2: Telemetry Ingestion Pipeline (M2)
 **Goal:** Ingest MQTT telemetry, persist metrics into PostgreSQL, and expose REST retrieval APIs.
-- [ ] **M2.1 MQTT Worker Core (`services/mqtt_worker.py`):**
+- [x] **M2.1 MQTT Worker Core (`services/mqtt_worker.py`):**
   - Integrate worker in FastAPI lifespan using `aiomqtt`.
   - Subscribe to `lansubx/+/telemetry`, `lansubx/+/status`, and `lansubx/+/command/ack`.
   - Implement auto-reconnection with exponential backoff on broker drop.
-- [ ] **M2.2 Ingestion Service (`services/telemetry.py`):**
+- [x] **M2.2 Ingestion Service (`services/telemetry.py`):**
   - Implement `process_telemetry(device_key, values, ts)`:
     - Look up device and verify ownership (with in-memory cache).
     - Drop unknown device keys safely without crashing.
     - Validate numeric-only values (converting bools to 1/0).
     - Insert batch telemetry records (`device_id, metric, value, ts`).
     - Update device `last_seen_at` and `is_online = true`.
-- [ ] **M2.3 Telemetry REST APIs:**
+- [x] **M2.3 Telemetry REST APIs:**
   - `GET /devices/{id}/telemetry/latest`: Return most recent value per metric.
   - `GET /devices/{id}/telemetry`: Query historical values by metric and time range (`start`, `end`, `limit`).
   - `GET /devices/{id}/metrics`: List all metrics recorded for a device.
@@ -180,18 +180,18 @@ lansubx/
 
 ### Milestone 3: Real-Time Live Feed, Alarms & Device Commands (M3)
 **Goal:** Implement Redis live bus, WebSocket streaming, rule evaluation, alarm lifecycle, and bi-directional commands.
-- [ ] **M3.1 Redis Pub/Sub Bus (`services/redis_bus.py`):**
+- [x] **M3.1 Redis Pub/Sub Bus (`services/redis_bus.py`):**
   - Publish live events to Redis channel `live:{owner_id}`.
-- [ ] **M3.2 WebSocket Endpoint (`routers/ws.py`):**
+- [x] **M3.2 WebSocket Endpoint (`routers/ws.py`):**
   - `/ws?token=<jwt>`: Authenticate and bind client to their owner's Redis stream.
   - Push real-time JSON frames: `telemetry`, `alarm`, `device_status`, `command_result`.
-- [ ] **M3.3 Alarm Rules Engine (`services/rules.py`):**
+- [x] **M3.3 Alarm Rules Engine (`services/rules.py`):**
   - Evaluate active rules on each telemetry packet (`>`, `<`, `>=`, `<=`, `==`).
   - Enforce debounce intervals (`debounce_seconds`) preventing alert spam.
   - Auto-resolve active alarms when telemetry values return to normal.
   - Alarm lifecycle management APIs: `GET /alarms`, `POST /alarms/{id}/ack`, `POST /alarms/{id}/resolve`.
   - Alarm rule configuration APIs: `POST/GET/PUT/DELETE /rules`.
-- [ ] **M3.4 Device Commands Pipeline (`routers/commands.py`):**
+- [x] **M3.4 Device Commands Pipeline (`routers/commands.py`):**
   - `POST /devices/{id}/commands`: Insert command record with status `sent`.
   - Publish command payload to MQTT topic `lansubx/{device_key}/command`.
   - Handle `lansubx/{device_key}/command/ack` in worker; update status to `acked` or `failed`.
@@ -199,41 +199,46 @@ lansubx/
 
 ### Milestone 4: Next.js Frontend Application (M4)
 **Goal:** Deliver a high-performance, responsive industrial web dashboard.
-- [ ] **M4.1 App Shell, Navigation & Theme:**
+- [x] **M4.1 App Shell, Navigation & Theme:**
   - Next.js 14 App Router, Tailwind CSS, Dark industrial aesthetic, responsive layout.
   - Auth context and protected routes middleware.
-- [ ] **M4.2 Overview Dashboard:**
+- [x] **M4.2 Overview Dashboard:**
   - Device count, online/offline status stats, active alarms summary, recent events feed.
-- [ ] **M4.3 Device Management & Onboarding Wizard:**
+- [x] **M4.3 Device Management & Onboarding Wizard:**
   - Device list with online indicators, kind badges, and last-seen timestamps.
   - Add-device wizard with kind selection, default template preview, and one-time MQTT secret modal.
-- [ ] **M4.4 Device Detail View:**
+- [x] **M4.4 Device Detail View:**
   - Real-time telemetry metric cards.
   - Live charts with time-range selector (15m, 1h, 24h, 7d).
   - Bi-directional command dispatch console and audit log.
-- [ ] **M4.5 Alarms & Rules UI:**
+- [x] **M4.5 Alarms & Rules UI:**
   - Live alarm feed with acknowledge and resolve actions.
   - Alarm rule builder (metric, operator, threshold, debounce, severity).
 
 ### Milestone 5: Gateways & Industrial Simulator (M5)
 **Goal:** Deliver bridge containers for non-MQTT industrial machinery and demo data simulators.
-- [ ] **M5.1 Modbus TCP Gateway:**
+- [x] **M5.1 Modbus TCP Gateway:**
   - Poll holding registers and coils using `pymodbus`.
   - Scale raw registers according to configured mapping and publish to `lansubx/{key}/telemetry`.
   - Publish Last Will and status on disconnect/reconnect.
-- [ ] **M5.2 OPC UA Gateway:**
+  - Bi-directional remote command execution (coils and registers) with status acking.
+- [x] **M5.2 OPC UA Gateway:**
   - Connect to OPC UA server using `asyncua`.
   - Read configured Node IDs on regular interval and publish telemetry.
-- [ ] **M5.3 LoRa ChirpStack Bridge:**
+  - Publish Last Will and status on disconnect/reconnect.
+  - Bi-directional remote command execution (write node variables) with status acking.
+- [x] **M5.3 LoRa ChirpStack Bridge:**
   - Ingest ChirpStack MQTT uplinks, map `devEui` to `device_key`, extract decoded JSON values with RSSI and SNR.
-- [ ] **M5.4 Multi-Protocol Simulator Container:**
-  - Simulator generating realistic factory data for Modbus, OPC UA, LoRa, and direct ESP32 devices for local testing.
+- [x] **M5.4 Multi-Protocol Simulator Container:**
+  - Simulator generating realistic factory data (temperatures, pressures, speeds, vibration, cycle times) for all 6 machine kinds (Modbus, OPC UA, LoRa, ESP32, Sensor Controller, PLC).
+  - Interactive command execution and simulated state machines.
 
 ### Milestone 6: Release Candidate & Acceptance Verification (M6)
 **Goal:** Validate all MVP acceptance criteria and harden deployment.
-- [ ] Automated end-to-end acceptance script (`scripts/acceptance_test.py`).
-- [ ] Verification of broker restart recovery and zero cross-tenant data leakage.
-- [ ] Production compose configuration (`docker-compose.prod.yml`).
+- [x] Automated end-to-end acceptance script (`scripts/acceptance_test.py`).
+- [x] Verification of broker restart recovery and zero cross-tenant data leakage.
+- [x] Production compose configuration (`docker-compose.prod.yml`).
+- [x] Automated Release Candidate test suite (`backend/tests/test_acceptance_rc.py`).
 
 ---
 
@@ -332,7 +337,7 @@ WHERE a.state != 'resolved';
 ### WebSocket Test Tap
 ```bash
 # Connect to live feed using websocat or wscat
-wscat -c "ws://localhost:8000/ws?token=<YOUR_JWT_TOKEN>"
+wscat -c "ws://localhost:6500/ws?token=<YOUR_JWT_TOKEN>"
 ```
 
 ---

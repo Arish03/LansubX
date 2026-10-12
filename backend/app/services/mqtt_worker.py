@@ -1,6 +1,7 @@
 import asyncio
 import json
 import logging
+import os
 from typing import Optional
 import aiomqtt
 
@@ -73,7 +74,7 @@ async def run_mqtt_consumer():
                 port=settings.MQTT_BROKER_PORT,
                 username=settings.MQTT_BACKEND_USERNAME,
                 password=settings.MQTT_BACKEND_PASSWORD,
-                identifier="lansubx_backend_worker",
+                identifier=f"lansubx_backend_worker_{os.getpid()}",
             ) as client:
                 logger.info("Connected to MQTT broker successfully.")
                 retry_delay = 1.0  # Reset backoff on successful connection

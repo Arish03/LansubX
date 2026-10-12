@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:6500";
 
 export function getAuthToken(): string | null {
   if (typeof window === "undefined") return null;
