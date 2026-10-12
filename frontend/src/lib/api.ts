@@ -1,16 +1,14 @@
 export function getApiUrl(): string {
   if (typeof window !== "undefined") {
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1") && envUrl !== "/api/proxy") {
       return envUrl;
     }
-    const hostname = window.location.hostname;
-    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
-      const protocol = window.location.protocol;
-      return `${protocol}//${hostname}:6500`;
-    }
+    // In browser: Route through Next.js rewrite proxy (/api/proxy -> backend:6500)
+    // Uses the same port (6001) that is already open on Azure NSG, with zero CORS issues!
+    return "/api/proxy";
   }
-  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:6500";
+  return process.env.BACKEND_INTERNAL_URL || "http://backend:6500";
 }
 
 export function getAuthToken(): string | null {
@@ -52,7 +50,7 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     });
   } catch (err: any) {
     if (err?.name === "TypeError" || String(err).includes("Failed to fetch")) {
-      throw new Error(`Cannot connect to Backend API at ${baseUrl}. Ensure port 6500 is open in Azure NSG and backend service is running.`);
+      throw new Error(`Cannot connect to Backend API. Ensure the backend container is running.`);
     }
     throw err;
   }
