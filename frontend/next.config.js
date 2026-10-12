@@ -1,4 +1,6 @@
 /** @type {import('next').NextConfig} */
+const backendTarget = process.env.BACKEND_INTERNAL_URL || "http://backend:6500";
+
 const nextConfig = {
   reactStrictMode: false,
   output: "standalone",
@@ -6,7 +8,7 @@ const nextConfig = {
     return [
       {
         source: "/api/proxy/:path*",
-        destination: "http://backend:6500/:path*",
+        destination: `${backendTarget}/:path*`,
       },
     ];
   },
