@@ -54,7 +54,7 @@ services:
         fi
         exec /usr/sbin/mosquitto -c /mosquitto/config/mosquitto.conf
     healthcheck:
-      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -u ${MQTT_BACKEND_USERNAME:-backend} -P ${MQTT_BACKEND_PASSWORD:-backend_secure_pass_123} -i healthcheck || exit 0"]
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 1883 || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 5
@@ -77,7 +77,7 @@ services:
       redis:
         condition: service_healthy
       mosquitto:
-        condition: service_healthy
+        condition: service_started
     command: >
       sh -c "alembic upgrade head &&
              python -m app.seed &&
