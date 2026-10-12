@@ -1,8 +1,15 @@
 import asyncio
 import logging
+import os
+import sys
+
 from sqlalchemy import select
+
 from app.db import AsyncSessionLocal
+from app.models.device import Device
+from app.models.gateway import Gateway
 from app.models.template import DeviceTemplate
+from app.models.user import User, UserRole
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("seed")
