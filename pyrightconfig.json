@@ -1,0 +1,15 @@
+{
+  "venvPath": ".",
+  "venv": ".venv",
+  "extraPaths": [
+    "./backend",
+    "./gateway",
+    "./simulator"
+  ],
+  "include": [
+    "backend",
+    "gateway",
+    "simulator",
+    "scripts"
+  ]
+}
