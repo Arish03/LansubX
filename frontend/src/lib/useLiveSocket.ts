@@ -1,9 +1,22 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { getAuthToken } from "./api";
 
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:6500";
+export function getWsUrl(): string {
+  if (typeof window !== "undefined") {
+    const envUrl = process.env.NEXT_PUBLIC_WS_URL;
+    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1")) {
+      return envUrl;
+    }
+    const hostname = window.location.hostname;
+    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1") {
+      const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+      return `${wsProtocol}//${hostname}:6500`;
+    }
+  }
+  return process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:6500";
+}
 
 export interface LiveMessage {
   type: "telemetry" | "alarm" | "device_status" | "command_result" | "system";
@@ -40,7 +53,7 @@ export function useLiveSocket(onMessage?: MessageListener) {
       }
 
       setStatus("connecting");
-      const url = `${WS_URL}/ws?token=${encodeURIComponent(token)}`;
+      const url = `${getWsUrl()}/ws?token=${encodeURIComponent(token)}`;
       const ws = new WebSocket(url);
       wsRef.current = ws;
 
@@ -53,7 +66,7 @@ export function useLiveSocket(onMessage?: MessageListener) {
         if (unmounted) return;
         try {
           const data: LiveMessage = JSON.parse(event.data);
-          listenersRef.current.forEach((listener) => {
+          listenersRef.current.forEach((listener: MessageListener) => {
             try {
               listener(data);
             } catch (err) {
