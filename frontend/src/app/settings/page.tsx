@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import useSWR from "swr";
 import { useAuth } from "@/lib/auth";
 import { api } from "@/lib/api";
-import { Settings, User, Shield, Server, ExternalLink, Check, Copy, Radio } from "lucide-react";
+import { useTheme } from "@/lib/theme";
+import { Settings, User, Shield, Server, ExternalLink, Check, Copy, Radio, Sun, Moon } from "lucide-react";
 
 export default function SettingsPage() {
   const { user } = useAuth();
+  const { theme, setTheme } = useTheme();
   const [copiedTopic, setCopiedTopic] = useState(false);
 
   const handleCopy = (text: string) => {
@@ -59,6 +61,53 @@ export default function SettingsPage() {
               {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "-"}
             </span>
           </div>
+        </div>
+      </div>
+
+      {/* Appearance & Theme Card */}
+      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 shadow-xl space-y-4">
+        <div className="flex items-center space-x-2.5">
+          <div className="h-8 w-8 rounded-lg bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+            {theme === "light" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+          </div>
+          <div>
+            <h2 className="text-sm font-semibold text-white">Appearance & Theme</h2>
+            <p className="text-xs text-slate-400 font-mono">Customize operator interface display theme</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 pt-1">
+          <button
+            onClick={() => setTheme("light")}
+            className={`p-4 rounded-xl border text-left transition-all ${
+              theme === "light"
+                ? "border-sky-500 bg-sky-500/10 shadow-sm"
+                : "border-slate-800 bg-slate-950/60 hover:bg-slate-800/40"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <Sun className={`h-5 w-5 ${theme === "light" ? "text-sky-500" : "text-slate-400"}`} />
+              {theme === "light" && <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 uppercase font-semibold">Active</span>}
+            </div>
+            <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">White / Light (Default)</div>
+            <p className="text-xs text-slate-500 mt-1">High-contrast, clean day mode with crisp borders</p>
+          </button>
+
+          <button
+            onClick={() => setTheme("dark")}
+            className={`p-4 rounded-xl border text-left transition-all ${
+              theme === "dark"
+                ? "border-sky-500 bg-sky-500/10 shadow-sm"
+                : "border-slate-800 bg-slate-950/60 hover:bg-slate-800/40"
+            }`}
+          >
+            <div className="flex items-center justify-between mb-2">
+              <Moon className={`h-5 w-5 ${theme === "dark" ? "text-sky-400" : "text-slate-400"}`} />
+              {theme === "dark" && <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 uppercase font-semibold">Active</span>}
+            </div>
+            <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">Industrial Dark</div>
+            <p className="text-xs text-slate-500 mt-1">Low-glare night palette optimized for plant control rooms</p>
+          </button>
         </div>
       </div>
 
