@@ -6,7 +6,7 @@ import { api } from "@/lib/api";
 import { useLiveSocket, LiveMessage } from "@/lib/useLiveSocket";
 import {
   Bell,
-  CheckCircle,
+  CircleCheck as CheckCircle,
   AlertTriangle,
   ShieldAlert,
   Filter,

@@ -2,19 +2,16 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import useSWR from "swr";
-import Link from "next/navigation";
 import { api } from "@/lib/api";
 import { useLiveSocket, LiveMessage } from "@/lib/useLiveSocket";
 import {
   Cpu,
-  CheckCircle2,
-  XCircle,
-  BellAlert,
+  CircleCheck as CheckCircle2,
+  CircleX as XCircle,
   Network,
   ArrowUpRight,
   RefreshCw,
-  Sliders,
-  PlusCircle,
+  CirclePlus as PlusCircle,
   ShieldAlert,
 } from "lucide-react";
 
@@ -49,15 +46,15 @@ export default function DashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Plant Operations Overview</h1>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Plant Operations Overview</h1>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-sans">
             Unified status across Modbus, OPC UA, LoRa, and Direct MQTT networks
           </p>
         </div>
         <div className="flex items-center space-x-3">
           <button
             onClick={() => mutate()}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 hover:text-white hover:bg-slate-800 transition-colors"
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Refresh</span>
@@ -75,59 +72,59 @@ export default function DashboardPage() {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Devices */}
-        <div className="p-5 rounded-xl bg-slate-900/70 border border-slate-800/80 shadow-lg relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-slate-400">Total Devices</span>
-            <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-sky-400 transition-colors">
+            <span className="text-xs font-sans uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider">Total Devices</span>
+            <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
               <Cpu className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white font-mono">{stats?.total_devices ?? 0}</span>
-            <span className="text-xs text-slate-400">registered</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white font-mono">{stats?.total_devices ?? 0}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">registered</span>
           </div>
         </div>
 
         {/* Online Devices */}
-        <div className="p-5 rounded-xl bg-slate-900/70 border border-slate-800/80 shadow-lg relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-emerald-400">Online Machines</span>
-            <div className="h-8 w-8 rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
+            <span className="text-xs font-sans uppercase font-semibold text-emerald-700 dark:text-emerald-400 tracking-wider">Online Machines</span>
+            <div className="h-8 w-8 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/40 flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-emerald-400 font-mono">{stats?.online_devices ?? 0}</span>
-            <span className="text-xs text-slate-400">active now</span>
+            <span className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 font-mono">{stats?.online_devices ?? 0}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">active now</span>
           </div>
         </div>
 
         {/* Offline Devices */}
-        <div className="p-5 rounded-xl bg-slate-900/70 border border-slate-800/80 shadow-lg relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-slate-400">Offline</span>
-            <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-500">
+            <span className="text-xs font-sans uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider">Offline</span>
+            <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-500">
               <XCircle className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-slate-300 font-mono">{stats?.offline_devices ?? 0}</span>
-            <span className="text-xs text-slate-400">inactive</span>
+            <span className="text-3xl font-bold text-slate-700 dark:text-slate-300 font-mono">{stats?.offline_devices ?? 0}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">inactive</span>
           </div>
         </div>
 
         {/* Active Alarms */}
         <div
-          className={`p-5 rounded-xl border shadow-lg relative overflow-hidden transition-all ${
+          className={`p-5 rounded-xl border shadow-sm dark:shadow-lg relative overflow-hidden transition-all ${
             (stats?.active_alarms ?? 0) > 0
-              ? "bg-rose-950/30 border-rose-800/60 shadow-rose-950/20"
-              : "bg-slate-900/70 border-slate-800/80"
+              ? "bg-rose-50 dark:bg-rose-950/30 border-rose-200 dark:border-rose-800/60"
+              : "bg-white dark:bg-slate-900/70 border-slate-200 dark:border-slate-800/80"
           }`}
         >
           <div className="flex items-center justify-between">
             <span
-              className={`text-xs font-mono uppercase ${
-                (stats?.active_alarms ?? 0) > 0 ? "text-rose-400" : "text-slate-400"
+              className={`text-xs font-sans uppercase font-semibold tracking-wider ${
+                (stats?.active_alarms ?? 0) > 0 ? "text-rose-700 dark:text-rose-400" : "text-slate-500 dark:text-slate-400"
               }`}
             >
               Active Alarms
@@ -135,8 +132,8 @@ export default function DashboardPage() {
             <div
               className={`h-8 w-8 rounded-lg flex items-center justify-center ${
                 (stats?.active_alarms ?? 0) > 0
-                  ? "bg-rose-900/50 text-rose-400 border border-rose-700/50 animate-pulse"
-                  : "bg-slate-800 text-slate-400"
+                  ? "bg-rose-100 dark:bg-rose-900/50 text-rose-600 dark:text-rose-400 border border-rose-300 dark:border-rose-700/50 animate-pulse"
+                  : "bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
               }`}
             >
               <ShieldAlert className="h-4 w-4" />
@@ -145,45 +142,45 @@ export default function DashboardPage() {
           <div className="mt-3 flex items-baseline space-x-2">
             <span
               className={`text-3xl font-bold font-mono ${
-                (stats?.active_alarms ?? 0) > 0 ? "text-rose-400" : "text-white"
+                (stats?.active_alarms ?? 0) > 0 ? "text-rose-600 dark:text-rose-400" : "text-slate-900 dark:text-white"
               }`}
             >
               {stats?.active_alarms ?? 0}
             </span>
-            <span className="text-xs text-slate-400">unresolved</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">unresolved</span>
           </div>
         </div>
 
         {/* Gateways */}
-        <div className="p-5 rounded-xl bg-slate-900/70 border border-slate-800/80 shadow-lg relative overflow-hidden group">
+        <div className="p-5 rounded-xl bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 shadow-sm dark:shadow-lg relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-mono uppercase text-slate-400">Gateways</span>
-            <div className="h-8 w-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:text-sky-400 transition-colors">
+            <span className="text-xs font-sans uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider">Gateways</span>
+            <div className="h-8 w-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-400 group-hover:text-sky-600 dark:group-hover:text-sky-400 transition-colors">
               <Network className="h-4 w-4" />
             </div>
           </div>
           <div className="mt-3 flex items-baseline space-x-2">
-            <span className="text-3xl font-bold text-white font-mono">{stats?.total_gateways ?? 0}</span>
-            <span className="text-xs text-slate-400">bridges</span>
+            <span className="text-3xl font-bold text-slate-900 dark:text-white font-mono">{stats?.total_gateways ?? 0}</span>
+            <span className="text-xs text-slate-500 dark:text-slate-400">bridges</span>
           </div>
         </div>
       </div>
 
       {/* Active & Recent Alarms Panel */}
-      <div className="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-xl">
-        <div className="p-5 border-b border-slate-800/80 flex items-center justify-between">
+      <div className="bg-white dark:bg-slate-900/70 border border-slate-200 dark:border-slate-800/80 rounded-xl overflow-hidden shadow-sm dark:shadow-xl">
+        <div className="p-5 border-b border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="h-8 w-8 rounded-lg bg-rose-950/60 border border-rose-800/40 flex items-center justify-center text-rose-400">
+            <div className="h-8 w-8 rounded-lg bg-rose-50 dark:bg-rose-950/60 border border-rose-200 dark:border-rose-800/40 flex items-center justify-center text-rose-600 dark:text-rose-400">
               <ShieldAlert className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="text-sm font-semibold text-white">Recent Alarm Events</h2>
-              <p className="text-xs text-slate-400">Real-time alerts triggered by threshold violations</p>
+              <h2 className="text-sm font-semibold text-slate-900 dark:text-white">Recent Alarm Events</h2>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Real-time alerts triggered by threshold violations</p>
             </div>
           </div>
           <a
             href="/alarms"
-            className="flex items-center space-x-1 text-xs text-sky-400 hover:text-sky-300 font-medium transition-colors"
+            className="flex items-center space-x-1 text-xs text-sky-600 hover:text-sky-700 dark:text-sky-400 dark:hover:text-sky-300 font-medium transition-colors"
           >
             <span>View All Alarms</span>
             <ArrowUpRight className="h-3.5 w-3.5" />
@@ -262,10 +259,10 @@ export default function DashboardPage() {
             </table>
           </div>
         ) : (
-          <div className="py-12 text-center text-slate-400 text-xs">
-            <CheckCircle2 className="h-8 w-8 text-emerald-500 mx-auto mb-2 opacity-80" />
-            <p className="text-white font-medium">All Systems Normal</p>
-            <p className="text-slate-500 mt-1">No active alarm conditions detected across machinery.</p>
+          <div className="py-12 text-center text-xs">
+            <CheckCircle2 className="h-9 w-9 text-emerald-600 dark:text-emerald-500 mx-auto mb-2.5 opacity-90" />
+            <p className="text-slate-900 dark:text-white font-semibold text-sm">All Systems Normal</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">No active alarm conditions detected across machinery.</p>
           </div>
         )}
       </div>
