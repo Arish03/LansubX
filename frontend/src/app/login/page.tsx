@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { Activity, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
+import { Activity, Lock, Mail, AlertCircle, ShieldCheck } from "lucide-react";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
