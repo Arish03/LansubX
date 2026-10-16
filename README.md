@@ -10,6 +10,7 @@
 
 **Lansub X** is an enterprise-grade Industrial IoT (IIoT) telemetry, alerting, and supervisory control platform. It bridges legacy field machinery (**Modbus TCP**, **OPC UA**, **LoRaWAN ChirpStack**) and modern smart edge devices (**ESP32**, **PLCs**, **Sensor Controllers**) into a unified real-time event pipeline powered by MQTT, Redis Pub/Sub, PostgreSQL, FastAPI, and Next.js.
 
+> 💡 **New to Lansub X?** Check out the complete **[tutorial.md](tutorial.md)** for a friendly architecture explainer and hands-on getting-started guide!
 > 📖 **Operator & User Guide:** For an end-to-end guided walkthrough with screenshots, user creation, device provisioning, MQTT credentials, live streaming charts, and remote control, check out **[HOW_TO_USE.md](HOW_TO_USE.md)**.
 
 ---
@@ -370,6 +371,7 @@ LansubX/
 
 ## 13. Documentation Index
 
+- **[tutorial.md](tutorial.md)** — Architectural walkthrough and hands-on step-by-step tutorial.
 - **[HOW_TO_USE.md](HOW_TO_USE.md)** — Step-by-step user onboarding, UI navigation, and device creation.
 - **[ARCHITECTURE.md](ARCHITECTURE.md)** — Architectural design, database schema, and component lifecycles.
 - **[PRD.md](PRD.md)** — Requirements, acceptance criteria, and user personas.
