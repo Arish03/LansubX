@@ -40,10 +40,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     async function loadUser() {
       const token = getAuthToken();
       if (!token) {
+        setUser(null);
         setLoading(false);
         if (pathname !== "/login" && pathname !== "/") {
-          router.push("/login");
+          router.replace("/login");
         }
+        return;
+      }
+
+      // If user is already loaded in state, no need to re-fetch on every route transition
+      if (user) {
+        setLoading(false);
         return;
       }
 
@@ -54,7 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         clearAuthToken();
         setUser(null);
         if (pathname !== "/login") {
-          router.push("/login");
+          router.replace("/login");
         }
       } finally {
         setLoading(false);
@@ -62,7 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadUser();
-  }, [pathname, router]);
+  }, [pathname, router, user]);
 
   const login = async (email: string, pass: string) => {
     const res = await api.auth.login({ email, password: pass });
