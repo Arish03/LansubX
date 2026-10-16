@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import useSWR from "swr";
 import { api } from "@/lib/api";
-import { Sliders, Plus, Trash2, Edit2, X, Check, AlertCircle } from "lucide-react";
+import { SlidersHorizontal as Sliders, Plus, Trash2, Edit2, X, Check, CircleAlert as AlertCircle } from "lucide-react";
 
 export default function RulesPage() {
   const { data: rules, mutate: mutateRules } = useSWR("/rules", () => api.rules.list());
