@@ -100,6 +100,8 @@ services:
       NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-/api/proxy}
       NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-ws://localhost:6500}
       BACKEND_INTERNAL_URL: http://backend:6500
+    volumes:
+      - ./frontend/src:/app/src
     depends_on:
       - backend
 

@@ -6,6 +6,7 @@ import Link from "next/navigation";
 import { usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/lib/auth";
 import { useLiveSocket } from "@/lib/useLiveSocket";
+import { ThemeProvider, useTheme } from "@/lib/theme";
 import {
   LayoutDashboard,
   Cpu,
@@ -17,12 +18,15 @@ import {
   Radio,
   Activity,
   Layers,
+  Sun,
+  Moon,
 } from "lucide-react";
 
 function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { user, logout, isAuthenticated } = useAuth();
   const { status: wsStatus } = useLiveSocket();
+  const { theme, toggleTheme } = useTheme();
 
   // If on login or landing page, render without dashboard shell
   if (!isAuthenticated || pathname === "/login") {
@@ -113,13 +117,22 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
                 {user?.role}
               </span>
             </div>
-            <button
-              onClick={() => logout()}
-              title="Sign Out"
-              className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
+            <div className="flex items-center space-x-1">
+              <button
+                onClick={toggleTheme}
+                title={theme === "light" ? "Switch to Dark Mode" : "Switch to Light (White) Mode"}
+                className="p-2 text-slate-400 hover:text-sky-500 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
+              </button>
+              <button
+                onClick={() => logout()}
+                title="Sign Out"
+                className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         </div>
       </aside>
@@ -134,7 +147,7 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en">
       <head>
         <title>Lansub X | Industrial IoT Platform</title>
         <meta
@@ -143,10 +156,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
       </head>
-      <body className="bg-slate-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-white">
-        <AuthProvider>
-          <NavigationShell>{children}</NavigationShell>
-        </AuthProvider>
+      <body className="antialiased selection:bg-sky-500 selection:text-white">
+        <ThemeProvider>
+          <AuthProvider>
+            <NavigationShell>{children}</NavigationShell>
+          </AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
