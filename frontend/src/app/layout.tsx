@@ -24,13 +24,25 @@ import {
 
 function NavigationShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, loading } = useAuth();
   const { status: wsStatus } = useLiveSocket();
   const { theme, toggleTheme } = useTheme();
 
+  // Prevent flash of unauthenticated layout during token verification
+  if (loading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="h-10 w-10 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-mono text-slate-500 dark:text-slate-400">Connecting to Lansub X...</p>
+        </div>
+      </div>
+    );
+  }
+
   // If on login or landing page, render without dashboard shell
   if (!isAuthenticated || pathname === "/login") {
-    return <main className="min-h-screen">{children}</main>;
+    return <main className="min-h-screen bg-slate-50 dark:bg-slate-950">{children}</main>;
   }
 
   const navItems = [
@@ -43,9 +55,9 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950 text-slate-100">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
       {/* Sidebar Navigation */}
-      <aside className="w-64 flex flex-col border-r border-slate-800 bg-slate-900/90 backdrop-blur-md">
+      <aside className="w-64 flex flex-col border-r border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/90 backdrop-blur-md">
         {/* Brand Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-slate-800">
           <div className="flex items-center space-x-3">
@@ -138,7 +150,7 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col overflow-y-auto bg-slate-950/95">
+      <main className="flex-1 flex flex-col overflow-y-auto bg-slate-50 dark:bg-slate-950">
         <div className="flex-1 p-8 max-w-7xl w-full mx-auto">{children}</div>
       </main>
     </div>

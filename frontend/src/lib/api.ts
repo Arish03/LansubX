@@ -1,12 +1,15 @@
 export function getApiUrl(): string {
   if (typeof window !== "undefined") {
+    // If a custom API URL is explicitly configured, use it
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1") && envUrl !== "/api/proxy") {
+    if (envUrl && envUrl !== "/api/proxy") {
       return envUrl;
     }
-    // In browser: Route through Next.js rewrite proxy (/api/proxy -> backend:6500)
-    // Uses the same port (6001) that is already open on Azure NSG, with zero CORS issues!
-    return "/api/proxy";
+    // Direct browser connection to FastAPI backend on port 6500
+    // Eliminates Next.js proxy latency and connection pool bottleneck
+    const hostname = window.location.hostname || "localhost";
+    const protocol = window.location.protocol === "https:" ? "https:" : "http:";
+    return `${protocol}//${hostname}:6500`;
   }
   return process.env.BACKEND_INTERNAL_URL || "http://backend:6500";
 }
