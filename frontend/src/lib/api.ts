@@ -1,15 +1,11 @@
 export function getApiUrl(): string {
   if (typeof window !== "undefined") {
-    // If a custom API URL is explicitly configured, use it
     const envUrl = process.env.NEXT_PUBLIC_API_URL;
-    if (envUrl && envUrl !== "/api/proxy") {
+    if (envUrl && !envUrl.includes("localhost") && !envUrl.includes("127.0.0.1") && envUrl !== "/api/proxy") {
       return envUrl;
     }
-    // Direct browser connection to FastAPI backend on port 6500
-    // Eliminates Next.js proxy latency and connection pool bottleneck
-    const hostname = window.location.hostname || "localhost";
-    const protocol = window.location.protocol === "https:" ? "https:" : "http:";
-    return `${protocol}//${hostname}:6500`;
+    // Default to same-origin Next.js proxy to avoid browser CORS issues
+    return "/api/proxy";
   }
   return process.env.BACKEND_INTERNAL_URL || "http://backend:6500";
 }
@@ -49,13 +45,22 @@ export async function apiFetch<T>(endpoint: string, options: RequestInit = {}): 
     res = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers,
-      credentials: "include",
     });
   } catch (err: any) {
-    if (err?.name === "TypeError" || String(err).includes("Failed to fetch")) {
+    // If /api/proxy failed, attempt direct connection to port 6500 as fallback
+    if (baseUrl === "/api/proxy" && typeof window !== "undefined") {
+      try {
+        const altUrl = `http://${window.location.hostname || "localhost"}:6500`;
+        res = await fetch(`${altUrl}${endpoint}`, {
+          ...options,
+          headers,
+        });
+      } catch {
+        throw new Error(`Cannot connect to Backend API. Ensure the backend container is running.`);
+      }
+    } else {
       throw new Error(`Cannot connect to Backend API. Ensure the backend container is running.`);
     }
-    throw err;
   }
 
   if (!res.ok) {
