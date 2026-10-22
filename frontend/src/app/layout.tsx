@@ -55,8 +55,10 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
   const { status: wsStatus } = useLiveSocket();
   const { theme, toggleTheme } = useTheme();
 
-  // Prevent flash of unauthenticated layout during token verification
-  if (loading) {
+  const isPublicRoute = pathname === "/" || pathname === "/landing" || pathname === "/login";
+
+  // Prevent flash of unauthenticated layout during token verification, except for public routes
+  if (loading && !isPublicRoute && pathname !== "/demo") {
     return (
       <div className="flex h-screen items-center justify-center bg-slate-900 text-slate-100 cyber-grid-bg">
         <div className="glass-card p-8 rounded-2xl flex flex-col items-center space-y-4">
@@ -67,13 +69,14 @@ function NavigationShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // If on login or landing page, render without dashboard shell
-  if (!isAuthenticated || pathname === "/login") {
+  // If on public landing/login page, or unauthenticated on demo, render standalone
+  if (isPublicRoute || (!isAuthenticated && pathname === "/demo")) {
     return <main className="min-h-screen">{children}</main>;
   }
 
   const navItems = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Live Demo", href: "/demo", icon: Radio },
     { label: "Devices", href: "/devices", icon: Cpu },
     { label: "Alarms", href: "/alarms", icon: Bell },
     { label: "Rules", href: "/rules", icon: Sliders },

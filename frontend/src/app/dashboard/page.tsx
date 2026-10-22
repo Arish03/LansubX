@@ -2,9 +2,9 @@
 
 import React, { useEffect, useState, useCallback } from "react";
 import useSWR from "swr";
+import Link from "next/link";
 import { api } from "@/lib/api";
 import { useLiveSocket, LiveMessage } from "@/lib/useLiveSocket";
-import RealtimeStreamChart from "@/components/charts/RealtimeStreamChart";
 import FleetDistributionDonut from "@/components/charts/FleetDistributionDonut";
 import ProtocolDistributionDonut from "@/components/charts/ProtocolDistributionDonut";
 import {
@@ -20,6 +20,9 @@ import {
   Zap,
   Activity,
   Layers,
+  ChevronRight,
+  Sliders,
+  ExternalLink,
 } from "lucide-react";
 
 interface RecentLiveEvent {
@@ -41,6 +44,7 @@ export default function DashboardPage() {
     { id: "e1", deviceKey: "MODBUS-PUMP-01", metric: "motor_speed", value: 1450, time: "Just now" },
     { id: "e2", deviceKey: "ESP32-NODE-04", metric: "temperature", value: 68.2, time: "Just now" },
     { id: "e3", deviceKey: "OPCUA-RIG-02", metric: "pressure", value: 9.15, time: "Just now" },
+    { id: "e4", deviceKey: "LORA-NODE-ENV", metric: "humidity", value: 52.4, time: "Just now" },
   ]);
 
   // Listen to real-time events over WebSocket
@@ -86,7 +90,7 @@ export default function DashboardPage() {
         <div>
           <div className="flex items-center space-x-2.5">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-              Industrial Plant Telemetry Cockpit
+              Plant Operations Supervisory Cockpit
             </h1>
             <span className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/30">
               <span className="h-1.5 w-1.5 rounded-full bg-sky-400 beacon-live" />
@@ -94,11 +98,20 @@ export default function DashboardPage() {
             </span>
           </div>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
-            Unified supervisory monitoring across Modbus TCP, OPC UA, LoRaWAN, and Direct MQTT pipelines
+            Unified supervisory overview across Modbus TCP, OPC UA, LoRaWAN, and Direct MQTT pipelines
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href="/demo"
+            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 border border-emerald-500/30 text-xs font-mono font-semibold transition-all shadow-sm"
+          >
+            <span className="h-2 w-2 rounded-full bg-emerald-400 beacon-live" />
+            <span>Live Stream Studio</span>
+            <ExternalLink className="h-3 w-3" />
+          </Link>
+
           <button
             onClick={() => {
               mutateStats();
@@ -107,19 +120,20 @@ export default function DashboardPage() {
             className="glass-card flex items-center space-x-1.5 px-3.5 py-2 rounded-xl text-xs font-mono text-slate-700 dark:text-slate-200 hover:text-sky-500 transition-colors shadow-sm"
           >
             <RefreshCw className="h-3.5 w-3.5" />
-            <span>Sync State</span>
+            <span>Sync</span>
           </button>
-          <a
+
+          <Link
             href="/devices"
-            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-xs font-semibold text-white shadow-lg shadow-sky-600/25 transition-all"
+            className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-xs font-semibold text-white shadow-lg shadow-sky-600/25 transition-all font-mono"
           >
             <PlusCircle className="h-3.5 w-3.5" />
-            <span>Register Machine</span>
-          </a>
+            <span>Add Device</span>
+          </Link>
         </div>
       </div>
 
-      {/* KPI Cards Tier - Frosted Glass with Glowing Orbs */}
+      {/* KPI Cards Tier - Frosted Glass with Ambient Glowing Orbs */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Total Devices */}
         <div className="glass-kpi rounded-2xl p-5 relative group">
@@ -140,7 +154,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 text-[10px] font-mono text-sky-600 dark:text-sky-400 flex items-center space-x-1">
             <Activity className="h-3 w-3" />
-            <span>Industrial fleet</span>
+            <span>Active fleet inventory</span>
           </div>
         </div>
 
@@ -163,7 +177,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 text-[10px] font-mono text-emerald-600 dark:text-emerald-400 flex items-center space-x-1">
             <Zap className="h-3 w-3" />
-            <span>Telemetring real-time</span>
+            <span>Live heartbeats streaming</span>
           </div>
         </div>
 
@@ -186,7 +200,7 @@ export default function DashboardPage() {
           </div>
           <div className="mt-2 text-[10px] font-mono text-slate-500 flex items-center space-x-1">
             <span>&bull;</span>
-            <span>No heartbeat in 30s</span>
+            <span>No telemetry in 30s</span>
           </div>
         </div>
 
@@ -226,7 +240,7 @@ export default function DashboardPage() {
             <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">unresolved</span>
           </div>
           <div className="mt-2 text-[10px] font-mono text-rose-600 dark:text-rose-400 flex items-center space-x-1">
-            <span>{(stats?.active_alarms ?? 0) > 0 ? "Requires Acknowledgment" : "Nominal limits"}</span>
+            <span>{(stats?.active_alarms ?? 0) > 0 ? "Attention Required" : "Nominal limits"}</span>
           </div>
         </div>
 
@@ -235,7 +249,7 @@ export default function DashboardPage() {
           <div className="glass-glow-purple" />
           <div className="flex items-center justify-between">
             <span className="text-[11px] font-mono uppercase font-semibold text-slate-500 dark:text-slate-400 tracking-wider">
-              Bridges & Gateways
+              Protocol Bridges
             </span>
             <div className="h-8 w-8 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
               <Network className="h-4 w-4" />
@@ -245,33 +259,120 @@ export default function DashboardPage() {
             <span className="text-3xl font-extrabold font-mono text-slate-900 dark:text-white">
               {stats?.total_gateways ?? 0}
             </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">connected</span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">gateways</span>
           </div>
           <div className="mt-2 text-[10px] font-mono text-violet-600 dark:text-violet-400 flex items-center space-x-1">
             <Layers className="h-3 w-3" />
-            <span>Multiplexed channels</span>
+            <span>Modbus &amp; OPC UA</span>
           </div>
         </div>
       </div>
 
-      {/* Main Visual Tier: Realtime Stream Line Graph + Donut Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left: Real-time Multi-Stream Line Graph (8 cols) */}
-        <div className="lg:col-span-8">
-          <RealtimeStreamChart />
-        </div>
+      {/* Real-time Telemetry Live Stream Showcase Banner */}
+      <div className="glass-panel rounded-3xl p-6 relative overflow-hidden bg-gradient-to-r from-sky-500/15 via-slate-900/40 to-cyan-500/10 border border-sky-500/30 shadow-xl">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center space-x-2">
+              <span className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 beacon-live" />
+                <span>LIVE STREAM STUDIO ACTIVE</span>
+              </span>
+              <span className="text-slate-400 text-xs font-mono">&bull; 1 msgs/sec &bull; 30 pts rolling buffer</span>
+            </div>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+              Real-time Telemetry Data Stream Studio
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-slate-300 font-mono leading-relaxed">
+              Explore dynamic multi-metric time-series curves for Temperature, Pressure, Vibration, Motor RPM, and Power Load with live scenario fault injection.
+            </p>
+          </div>
 
-        {/* Right: Dual Donut / Pie Charts (4 cols) */}
-        <div className="lg:col-span-4 space-y-6">
+          <div className="flex items-center space-x-3">
+            <Link
+              href="/demo"
+              className="px-5 py-3 rounded-2xl bg-gradient-to-r from-sky-600 to-cyan-500 hover:from-sky-500 hover:to-cyan-400 text-xs font-mono font-bold text-white shadow-xl shadow-sky-500/25 flex items-center space-x-2 group transition-all"
+            >
+              <Radio className="h-4 w-4 animate-pulse" />
+              <span>Launch Live Stream Studio</span>
+              <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Dual Distribution Donut Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-6">
           <FleetDistributionDonut
             online={stats?.online_devices ?? 0}
             offline={stats?.offline_devices ?? 0}
             alarms={stats?.active_alarms ?? 0}
           />
+        </div>
+        <div className="lg:col-span-6">
           <ProtocolDistributionDonut
             devices={devices}
             totalGateways={stats?.total_gateways ?? 0}
           />
+        </div>
+      </div>
+
+      {/* Machine Fleet Matrix Preview */}
+      <div className="glass-card rounded-2xl p-6 shadow-xl">
+        <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200/50 dark:border-slate-800/80">
+          <div className="flex items-center space-x-2.5">
+            <Cpu className="h-4 w-4 text-sky-400" />
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Connected Machinery &amp; Field Equipment
+            </h3>
+          </div>
+          <Link
+            href="/devices"
+            className="text-xs font-mono text-sky-500 hover:text-sky-400 flex items-center space-x-1"
+          >
+            <span>View All Devices ({devices ? devices.length : 0})</span>
+            <ChevronRight className="h-3 w-3" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {devices && devices.length > 0 ? (
+            devices.slice(0, 8).map((d: any) => (
+              <Link
+                key={d.id}
+                href={`/devices/${d.id}`}
+                className="p-4 rounded-xl glass-card hover:border-sky-500/50 transition-all block group"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center space-x-1.5">
+                    <span
+                      className={`h-2 w-2 rounded-full ${
+                        d.is_online ? "bg-emerald-400 beacon-live" : "bg-slate-500"
+                      }`}
+                    />
+                    <span className="text-[10px] font-mono text-slate-400 uppercase font-semibold">
+                      {d.kind}
+                    </span>
+                  </div>
+                  <ChevronRight className="h-3.5 w-3.5 text-slate-400 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
+                </div>
+                <h4 className="font-semibold text-sm text-slate-900 dark:text-white truncate">
+                  {d.name}
+                </h4>
+                <p className="text-[11px] font-mono text-sky-500 dark:text-sky-400 mt-1 truncate">
+                  {d.device_key}
+                </p>
+                <div className="mt-3 pt-2 border-t border-slate-200/40 dark:border-slate-800/60 flex items-center justify-between text-[10px] font-mono text-slate-500">
+                  <span>Last Seen:</span>
+                  <span>{d.last_seen_at ? new Date(d.last_seen_at).toLocaleTimeString() : "Offline"}</span>
+                </div>
+              </Link>
+            ))
+          ) : (
+            <div className="col-span-full py-8 text-center text-xs font-mono text-slate-500">
+              No devices registered yet. Click &quot;Add Device&quot; to connect equipment.
+            </div>
+          )}
         </div>
       </div>
 
@@ -286,20 +387,20 @@ export default function DashboardPage() {
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-slate-900 dark:text-white">
-                  Recent Alarms & Fault Conditions
+                  Recent Alarms &amp; Fault Conditions
                 </h2>
                 <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                   Automated threshold breaches evaluated by the rules engine
                 </p>
               </div>
             </div>
-            <a
+            <Link
               href="/alarms"
               className="flex items-center space-x-1 text-xs text-sky-500 hover:text-sky-400 font-mono font-medium transition-colors"
             >
               <span>View All Alarms</span>
               <ArrowUpRight className="h-3.5 w-3.5" />
-            </a>
+            </Link>
           </div>
 
           {stats?.recent_alarms && stats.recent_alarms.length > 0 ? (
@@ -324,7 +425,7 @@ export default function DashboardPage() {
                       <tr key={alarm.id} className="hover:bg-slate-100/50 dark:hover:bg-slate-800/30 transition-colors">
                         <td className="py-3.5 px-5">
                           <span
-                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] uppercase font-semibold ${
+                            className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] uppercase font-semibold ${
                               isCritical
                                 ? "bg-rose-500/10 text-rose-500 border border-rose-500/30"
                                 : "bg-amber-500/10 text-amber-500 border border-amber-500/30"
@@ -333,10 +434,10 @@ export default function DashboardPage() {
                             {alarm.severity}
                           </span>
                         </td>
-                        <td className="py-3.5 px-5 font-medium text-slate-900 dark:text-white">
-                          <a href={`/devices/${alarm.device_id}`} className="hover:text-sky-400 transition-colors">
+                        <td className="py-3.5 px-5 font-semibold text-slate-900 dark:text-white">
+                          <Link href={`/devices/${alarm.device_id}`} className="hover:text-sky-400 transition-colors">
                             {alarm.device_name}
-                          </a>
+                          </Link>
                         </td>
                         <td className="py-3.5 px-5 text-slate-600 dark:text-slate-300">{alarm.metric}</td>
                         <td className="py-3.5 px-5 font-bold text-slate-900 dark:text-white">{alarm.value}</td>
@@ -398,7 +499,7 @@ export default function DashboardPage() {
             </div>
 
             <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono mb-3">
-              Incoming telemetry frames arriving via MQTT & Redis pub/sub
+              Incoming telemetry frames arriving via MQTT &amp; Redis pub/sub
             </p>
 
             <div className="space-y-2">
@@ -428,9 +529,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-200/40 dark:border-slate-800/60 text-center">
-            <span className="text-[10px] font-mono text-slate-500">
-              Encrypted Modbus TCP / OPC UA / LoRa telemetry pipeline
-            </span>
+            <Link
+              href="/demo"
+              className="text-xs font-mono text-sky-500 hover:text-sky-400 font-semibold inline-flex items-center space-x-1"
+            >
+              <span>View Fullscreen Real-time Stream Studio</span>
+              <ChevronRight className="h-3 w-3" />
+            </Link>
           </div>
         </div>
       </div>
