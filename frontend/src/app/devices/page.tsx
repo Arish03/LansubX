@@ -17,6 +17,7 @@ import {
   AlertTriangle,
   Info,
   X,
+  Radio,
 } from "lucide-react";
 
 const KINDS = [
@@ -114,10 +115,18 @@ export default function DevicesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2 border-b border-slate-200/40 dark:border-slate-800/60">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white">Device Inventory</h1>
-          <p className="text-xs text-slate-400 mt-1 font-mono">
+          <div className="flex items-center space-x-2.5">
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+              Device Inventory & Fleet Management
+            </h1>
+            <span className="flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-sky-500/10 text-sky-500 border border-sky-500/30">
+              <span className="h-1.5 w-1.5 rounded-full bg-sky-400 beacon-live" />
+              <span>{devices ? devices.length : 0} MACHINES</span>
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 font-mono">
             Provision, monitor, and configure machines across direct MQTT and gateway connections
           </p>
         </div>
@@ -129,7 +138,7 @@ export default function DevicesPage() {
             setNewDeviceGatewayId("");
             setIsModalOpen(true);
           }}
-          className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-xs font-semibold text-white shadow-lg shadow-sky-600/30 transition-all self-start sm:self-auto"
+          className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 text-xs font-semibold text-white shadow-lg shadow-sky-600/30 transition-all self-start sm:self-auto"
         >
           <Plus className="h-4 w-4" />
           <span>Add New Device</span>
@@ -139,23 +148,23 @@ export default function DevicesPage() {
       {/* Filter and Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-500 pointer-events-none" />
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400 pointer-events-none" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by device name or key..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-900/80 border border-slate-800 rounded-lg text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500"
+            className="w-full pl-9 pr-4 py-2.5 glass-input rounded-xl text-xs font-mono"
           />
         </div>
         <div className="flex items-center space-x-2">
-          <Filter className="h-4 w-4 text-slate-500" />
+          <Filter className="h-4 w-4 text-slate-400" />
           <select
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
-            className="bg-slate-900/80 border border-slate-800 rounded-lg text-xs text-slate-300 py-2 px-3 focus:outline-none focus:ring-1 focus:ring-sky-500"
+            className="glass-input rounded-xl text-xs font-mono py-2.5 px-3"
           >
-            <option value="all">All Device Kinds</option>
+            <option value="all">All Device Protocols</option>
             {KINDS.map((k) => (
               <option key={k.id} value={k.id}>
                 {k.name}
@@ -165,11 +174,11 @@ export default function DevicesPage() {
         </div>
       </div>
 
-      {/* Devices Table */}
-      <div className="bg-slate-900/70 border border-slate-800/80 rounded-xl overflow-hidden shadow-xl">
+      {/* Devices Table - Glass Card */}
+      <div className="glass-card rounded-2xl overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead className="bg-slate-950/60 text-slate-400 font-mono uppercase border-b border-slate-800/80">
+          <table className="w-full text-left text-xs font-mono">
+            <thead className="bg-slate-100/60 dark:bg-slate-950/60 text-slate-500 dark:text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-200/60 dark:border-slate-800/80">
               <tr>
                 <th className="py-3 px-5">Status</th>
                 <th className="py-3 px-5">Device Name</th>
@@ -180,45 +189,45 @@ export default function DevicesPage() {
                 <th className="py-3 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60">
+            <tbody className="divide-y divide-slate-200/40 dark:divide-slate-800/60">
               {filteredDevices.length > 0 ? (
                 filteredDevices.map((device: any) => {
                   const isDirect = ["esp32", "sensor_controller", "plc"].includes(device.kind);
                   return (
-                    <tr key={device.id} className="hover:bg-slate-800/30 transition-colors">
+                    <tr key={device.id} className="hover:bg-slate-100/50 dark:hover:bg-slate-800/30 transition-colors">
                       <td className="py-3.5 px-5">
                         <div className="flex items-center space-x-2">
                           <div
                             className={`h-2.5 w-2.5 rounded-full ${
                               device.is_online
-                                ? "bg-emerald-400 shadow-sm shadow-emerald-400"
-                                : "bg-slate-600"
+                                ? "bg-emerald-400 beacon-live"
+                                : "bg-slate-400 dark:bg-slate-600"
                             }`}
                           />
                           <span
-                            className={`font-mono text-[11px] ${
-                              device.is_online ? "text-emerald-400 font-medium" : "text-slate-500"
+                            className={`font-mono text-[11px] font-semibold ${
+                              device.is_online ? "text-emerald-500" : "text-slate-400"
                             }`}
                           >
                             {device.is_online ? "Online" : "Offline"}
                           </span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-5 font-semibold text-white">
+                      <td className="py-3.5 px-5 font-semibold text-slate-900 dark:text-white">
                         <a
                           href={`/devices/${device.id}`}
-                          className="hover:text-sky-400 transition-colors flex items-center space-x-1"
+                          className="hover:text-sky-500 dark:hover:text-sky-400 transition-colors flex items-center space-x-1"
                         >
                           <span>{device.name}</span>
                         </a>
                       </td>
                       <td className="py-3.5 px-5">
-                        <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded bg-slate-950 border border-slate-800 font-mono text-sky-400 text-[11px]">
+                        <div className="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-950/80 border border-slate-200/80 dark:border-white/10 font-mono text-sky-500 dark:text-sky-400 text-[11px]">
                           <span>{device.device_key}</span>
                           <button
                             onClick={() => handleCopyKey(device.device_key)}
                             title="Copy Key"
-                            className="text-slate-500 hover:text-white"
+                            className="text-slate-400 hover:text-sky-500 dark:hover:text-white ml-0.5"
                           >
                             {copiedKey === device.device_key ? (
                               <Check className="h-3 w-3 text-emerald-400" />
@@ -229,30 +238,30 @@ export default function DevicesPage() {
                         </div>
                       </td>
                       <td className="py-3.5 px-5">
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-mono uppercase bg-slate-800 text-slate-300 border border-slate-700">
+                        <span className="inline-block px-2 py-0.5 rounded-md text-[10px] font-mono uppercase bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/60 dark:border-slate-700">
                           {device.kind}
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 text-slate-400 font-mono text-[11px]">
+                      <td className="py-3.5 px-5 text-slate-500 font-mono text-[11px]">
                         {device.gateway_id ? `#${device.gateway_id}` : isDirect ? "Direct MQTT" : "None"}
                       </td>
                       <td className="py-3.5 px-5 text-slate-400 text-[11px]">
                         {device.last_seen_at
-                          ? new Date(device.last_seen_at).toLocaleString()
-                          : "Never connected"}
+                          ? new Date(device.last_seen_at).toLocaleTimeString()
+                          : "Never"}
                       </td>
                       <td className="py-3.5 px-5 text-right">
                         <div className="flex items-center justify-end space-x-2">
                           <a
                             href={`/devices/${device.id}`}
-                            className="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-slate-800 rounded transition-colors"
-                            title="Open Device Dashboard"
+                            className="p-1.5 text-slate-400 hover:text-sky-400 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                            title="Open Telemetry Dashboard"
                           >
                             <ExternalLink className="h-4 w-4" />
                           </a>
                           <button
                             onClick={() => handleDeleteDevice(device.id, device.name)}
-                            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded transition-colors"
+                            className="p-1.5 text-slate-400 hover:text-rose-500 hover:bg-slate-200/50 dark:hover:bg-slate-800 rounded-lg transition-colors"
                             title="Delete Device"
                           >
                             <Trash2 className="h-4 w-4" />
@@ -265,10 +274,10 @@ export default function DevicesPage() {
               ) : (
                 <tr>
                   <td colSpan={7} className="py-12 text-center text-slate-500">
-                    <Cpu className="h-8 w-8 text-slate-600 mx-auto mb-2" />
+                    <Cpu className="h-8 w-8 text-slate-400 mx-auto mb-2" />
                     <p className="text-sm font-medium text-slate-400">No Devices Found</p>
-                    <p className="text-xs text-slate-500 mt-1">
-                      {search ? "Try adjusting your search criteria" : "Click 'Add New Device' to onboard a machine."}
+                    <p className="text-xs text-slate-500 mt-1 font-mono">
+                      {search ? "Try adjusting your search filter" : "Click 'Add New Device' to onboard a machine."}
                     </p>
                   </td>
                 </tr>
@@ -280,11 +289,11 @@ export default function DevicesPage() {
 
       {/* Add Device Modal Wizard */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md">
+          <div className="glass-panel border border-slate-200 dark:border-white/10 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative">
             <button
               onClick={() => setIsModalOpen(false)}
-              className="absolute right-4 top-4 text-slate-400 hover:text-white"
+              className="absolute right-4 top-4 text-slate-400 hover:text-slate-900 dark:hover:text-white"
             >
               <X className="h-5 w-5" />
             </button>
@@ -292,34 +301,38 @@ export default function DevicesPage() {
             {!createdResult ? (
               <>
                 <div className="flex items-center space-x-3 mb-5">
-                  <div className="h-10 w-10 rounded-xl bg-sky-600/20 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                  <div className="h-10 w-10 rounded-xl bg-sky-500/15 border border-sky-500/30 flex items-center justify-center text-sky-400">
                     <Cpu className="h-5 w-5" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-white">Add Machine / Device</h2>
-                    <p className="text-xs text-slate-400 font-mono">Step 1 of 2: Configure device parameters</p>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">Add Machine / Device</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Step 1 of 2: Configure device parameters</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleCreateDevice} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Device Name</label>
+                    <label className="block text-xs font-mono font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Device Name
+                    </label>
                     <input
                       type="text"
                       required
                       value={newDeviceName}
                       onChange={(e) => setNewDeviceName(e.target.value)}
                       placeholder="e.g. CNC Spindle Controller #1"
-                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      className="w-full px-3.5 py-2.5 glass-input rounded-xl text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Machine Protocol / Kind</label>
+                    <label className="block text-xs font-mono font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                      Machine Protocol / Kind
+                    </label>
                     <select
                       value={newDeviceKind}
                       onChange={(e) => setNewDeviceKind(e.target.value)}
-                      className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                      className="w-full px-3.5 py-2.5 glass-input rounded-xl text-sm font-mono"
                     >
                       {KINDS.map((k) => (
                         <option key={k.id} value={k.id}>
@@ -332,11 +345,13 @@ export default function DevicesPage() {
                   {/* Gateway selector if non-direct */}
                   {!["esp32", "sensor_controller", "plc"].includes(newDeviceKind) && (
                     <div>
-                      <label className="block text-xs font-medium text-slate-300 mb-1.5">Associated Gateway</label>
+                      <label className="block text-xs font-mono font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                        Associated Gateway
+                      </label>
                       <select
                         value={newDeviceGatewayId}
                         onChange={(e) => setNewDeviceGatewayId(e.target.value ? Number(e.target.value) : "")}
-                        className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-sm text-white focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+                        className="w-full px-3.5 py-2.5 glass-input rounded-xl text-sm font-mono"
                       >
                         <option value="">None (Standalone or configured in gateway.yaml)</option>
                         {(gateways || [])
@@ -352,14 +367,14 @@ export default function DevicesPage() {
 
                   {/* Template preview */}
                   {selectedTemplate && (
-                    <div className="p-3.5 rounded-lg bg-slate-950/80 border border-slate-800">
-                      <div className="flex items-center space-x-1.5 text-xs text-sky-400 font-mono font-medium mb-1.5">
+                    <div className="p-3.5 rounded-xl bg-slate-100/70 dark:bg-slate-950/60 border border-slate-200/60 dark:border-white/10">
+                      <div className="flex items-center space-x-1.5 text-xs text-sky-500 font-mono font-medium mb-1.5">
                         <Info className="h-3.5 w-3.5" />
                         <span>Default Template: {selectedTemplate.name}</span>
                       </div>
-                      <p className="text-[11px] text-slate-400">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
                         Default metrics:{" "}
-                        <span className="font-mono text-slate-300">
+                        <span className="text-slate-700 dark:text-slate-300">
                           {selectedTemplate.config.holding_registers
                             ? selectedTemplate.config.holding_registers.map((r: any) => r.metric).join(", ")
                             : selectedTemplate.config.nodes
@@ -376,14 +391,14 @@ export default function DevicesPage() {
                     <button
                       type="button"
                       onClick={() => setIsModalOpen(false)}
-                      className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-800 rounded-lg"
+                      className="px-4 py-2 text-xs font-mono text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white bg-slate-200/50 dark:bg-slate-800 rounded-xl"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="px-4 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-md shadow-sky-600/30"
+                      className="px-4 py-2 text-xs font-mono font-semibold text-white bg-gradient-to-r from-sky-600 to-sky-500 rounded-xl shadow-md shadow-sky-600/30"
                     >
                       {submitting ? "Provisioning..." : "Create Device"}
                     </button>
@@ -398,30 +413,30 @@ export default function DevicesPage() {
                     <ShieldCheck className="h-6 w-6" />
                   </div>
                   <div>
-                    <h2 className="text-base font-bold text-white">Device Successfully Provisioned!</h2>
-                    <p className="text-xs text-slate-400 font-mono">Store credentials securely</p>
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">Device Successfully Provisioned!</h2>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">Store credentials securely</p>
                   </div>
                 </div>
 
-                <div className="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 font-mono text-xs">
+                <div className="p-4 rounded-xl bg-slate-100/70 dark:bg-slate-950/80 border border-slate-200/80 dark:border-white/10 space-y-3 font-mono text-xs">
                   <div>
                     <span className="text-slate-500 uppercase text-[10px] block">Device Key (Username)</span>
-                    <span className="text-sky-400 font-bold text-sm">{createdResult.device_key}</span>
+                    <span className="text-sky-500 dark:text-sky-400 font-bold text-sm">{createdResult.device_key}</span>
                   </div>
 
                   {createdResult.secret && (
-                    <div className="pt-2 border-t border-slate-800/80">
-                      <span className="text-amber-400 uppercase text-[10px] block font-bold">
+                    <div className="pt-2 border-t border-slate-200/60 dark:border-white/10">
+                      <span className="text-amber-500 uppercase text-[10px] block font-bold">
                         One-Time Secret Token (Password)
                       </span>
-                      <div className="flex items-center justify-between mt-1 p-2 rounded bg-slate-900 border border-slate-800">
-                        <span className="text-white font-mono break-all">{createdResult.secret}</span>
+                      <div className="flex items-center justify-between mt-1 p-2 rounded-lg bg-slate-200/60 dark:bg-slate-900 border border-slate-300 dark:border-slate-800">
+                        <span className="text-slate-900 dark:text-white font-mono break-all">{createdResult.secret}</span>
                         <button
                           onClick={() => handleCopySecret(createdResult.secret)}
-                          className="ml-2 text-slate-400 hover:text-white"
+                          className="ml-2 text-slate-400 hover:text-slate-900 dark:hover:text-white"
                         >
                           {copiedSecret ? (
-                            <Check className="h-4 w-4 text-emerald-400" />
+                            <Check className="h-4 w-4 text-emerald-500" />
                           ) : (
                             <Copy className="h-4 w-4" />
                           )}
@@ -432,18 +447,18 @@ export default function DevicesPage() {
                 </div>
 
                 {createdResult.secret ? (
-                  <div className="p-3 rounded-lg bg-amber-950/40 border border-amber-800/60 flex items-start space-x-2 text-[11px] text-amber-300">
-                    <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-start space-x-2 text-[11px] text-amber-600 dark:text-amber-300">
+                    <AlertTriangle className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
                     <span>
                       <strong>Important:</strong> This secret is shown only once and cannot be retrieved again.
                       Add this user to the Mosquitto broker with:
-                      <code className="block mt-1 font-mono text-[10px] text-white bg-slate-950 p-1.5 rounded">
+                      <code className="block mt-1 font-mono text-[10px] text-sky-600 dark:text-sky-400 bg-slate-100 dark:bg-slate-950 p-1.5 rounded">
                         ./scripts/add_mqtt_user.sh {createdResult.device_key} {createdResult.secret}
                       </code>
                     </span>
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-500 font-mono">
                     This gateway device publishes telemetry through the gateway translation loop using the shared gateway credentials.
                   </p>
                 )}
@@ -451,7 +466,7 @@ export default function DevicesPage() {
                 <div className="pt-2 flex justify-end">
                   <button
                     onClick={() => setIsModalOpen(false)}
-                    className="px-5 py-2 text-xs font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-lg shadow-md shadow-sky-600/30"
+                    className="px-5 py-2 text-xs font-mono font-semibold text-white bg-sky-600 hover:bg-sky-500 rounded-xl shadow-md shadow-sky-600/30"
                   >
                     Done
                   </button>

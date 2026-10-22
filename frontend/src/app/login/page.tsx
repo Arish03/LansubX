@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuth } from "@/lib/auth";
-import { Activity, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck } from "lucide-react";
+import { Activity, Lock, Mail, AlertCircle, ArrowRight, ShieldCheck, Zap } from "lucide-react";
 
 export default function LoginPage() {
   const { login, register } = useAuth();
@@ -31,36 +31,42 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4 relative overflow-hidden transition-colors">
-      {/* Background ambient glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none" />
+    <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden transition-colors cyber-grid-bg">
+      {/* Background ambient glowing orbs */}
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-md w-full relative z-10">
         {/* Brand Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center h-14 w-14 rounded-2xl bg-sky-600 shadow-xl shadow-sky-600/30 mb-4 border border-sky-400/20">
-            <Activity className="h-7 w-7 text-white" />
+          <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-gradient-to-tr from-sky-600 to-cyan-400 shadow-2xl shadow-sky-500/30 mb-4 border border-white/20">
+            <Activity className="h-8 w-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
-            LANSUB <span className="text-sky-500">X</span>
+          <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            LANSUB <span className="text-sky-400">X</span>
           </h1>
           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 uppercase tracking-widest font-mono">
-            Industrial Telemetry & Control Platform
+            Industrial Telemetry & Supervisory Cockpit
           </p>
         </div>
 
-        {/* Card */}
-        <div className="bg-white dark:bg-slate-900/80 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-xl dark:shadow-2xl">
-          {/* Tabs */}
-          <div className="flex rounded-lg bg-slate-100 dark:bg-slate-950/60 p-1 mb-6 border border-slate-200 dark:border-slate-800/80">
+        {/* Glass Card */}
+        <div className="glass-panel rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+          {/* Subtle top scanline accent */}
+          <div className="scanline-effect" />
+
+          {/* Mode Switcher Tabs */}
+          <div className="flex rounded-xl bg-slate-100 dark:bg-slate-950/60 p-1 mb-6 border border-slate-200/80 dark:border-white/10 font-mono">
             <button
               type="button"
               onClick={() => {
                 setIsRegister(false);
                 setError(null);
               }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${
-                !isRegister ? "bg-sky-600 text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                !isRegister
+                  ? "bg-sky-600 text-white shadow-sm font-bold"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Sign In
@@ -71,8 +77,10 @@ export default function LoginPage() {
                 setIsRegister(true);
                 setError(null);
               }}
-              className={`flex-1 py-2 text-xs font-semibold rounded-md transition-all ${
-                isRegister ? "bg-sky-600 text-white shadow-sm" : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+              className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${
+                isRegister
+                  ? "bg-sky-600 text-white shadow-sm font-bold"
+                  : "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
               }`}
             >
               Register
@@ -80,18 +88,20 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
             {error && (
-              <div className="p-3 rounded-lg bg-rose-50 dark:bg-rose-950/50 border border-rose-200 dark:border-rose-800/80 flex items-start space-x-2 text-rose-700 dark:text-rose-300 text-xs">
-                <AlertCircle className="h-4 w-4 text-rose-500 flex-shrink-0 mt-0.5" />
+              <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 flex items-start space-x-2 text-rose-500">
+                <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                 <span>{error}</span>
               </div>
             )}
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Email Address</label>
+              <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Operator Email Address
+              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Mail className="h-4 w-4" />
                 </div>
                 <input
@@ -100,15 +110,17 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="engineer@plant.lan"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl focus:outline-none"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-700 dark:text-slate-300 mb-1.5">Password</label>
+              <label className="block font-medium text-slate-700 dark:text-slate-300 mb-1.5">
+                Security Password
+              </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                   <Lock className="h-4 w-4" />
                 </div>
                 <input
@@ -117,28 +129,28 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-950/70 border border-slate-300 dark:border-slate-800 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/50 focus:border-sky-500 transition-colors"
+                  className="w-full pl-10 pr-4 py-2.5 glass-input rounded-xl focus:outline-none font-sans"
                 />
               </div>
             </div>
 
             {isRegister && (
-              <div className="p-2.5 rounded-lg bg-sky-50 dark:bg-sky-950/30 border border-sky-200 dark:border-sky-800/40 text-[11px] text-sky-800 dark:text-sky-300 flex items-center space-x-2">
-                <ShieldCheck className="h-4 w-4 text-sky-600 dark:text-sky-400 flex-shrink-0" />
-                <span>The first registered account automatically becomes the Administrator.</span>
+              <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] text-sky-600 dark:text-sky-300 flex items-center space-x-2">
+                <ShieldCheck className="h-4 w-4 text-sky-500 flex-shrink-0" />
+                <span>The first registered account automatically receives Administrator privileges.</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full mt-2 py-2.5 px-4 bg-sky-600 hover:bg-sky-500 disabled:bg-sky-800 text-white font-medium rounded-lg text-sm shadow-lg shadow-sky-600/30 flex items-center justify-center space-x-2 transition-all"
+              className="w-full mt-3 py-3 px-4 bg-gradient-to-r from-sky-600 to-sky-500 hover:from-sky-500 hover:to-sky-400 disabled:opacity-50 text-white font-semibold rounded-xl text-xs shadow-lg shadow-sky-600/30 flex items-center justify-center space-x-2 transition-all tracking-wider"
             >
               {submitting ? (
                 <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               ) : (
                 <>
-                  <span>{isRegister ? "Create Account" : "Access Platform"}</span>
+                  <span>{isRegister ? "Create Account" : "Access Cockpit"}</span>
                   <ArrowRight className="h-4 w-4" />
                 </>
               )}
@@ -146,9 +158,9 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Security badge footer */}
-        <p className="text-center text-[11px] text-slate-500 mt-6">
-          Mosquitto Broker ACL &bull; HS256 Token Auth &bull; Scoped Multi-Tenant
+        {/* Security Badge Footer */}
+        <p className="text-center text-[11px] text-slate-500 mt-6 font-mono">
+          Mosquitto Broker ACL &bull; HS256 JWT &bull; Industrial Real-Time WebSockets
         </p>
       </div>
     </div>
